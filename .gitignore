@@ -1,0 +1,8 @@
+# untracked files
+/out/
+guillermo_rojas_hernandez_viren_mody_hw2.iml
+.idea/
+
+#Gradle build untracked files
+/.gradle/
+/build/
