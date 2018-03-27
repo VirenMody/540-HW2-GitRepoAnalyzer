@@ -1,24 +1,11 @@
-import org.eclipse.egit.github.core.*;
-import org.eclipse.egit.github.core.service.*;
-import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.RemoteAddCommand;
-import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.transport.URIish;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.egit.github.core.SearchRepository;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import java.io.*;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.w3c.dom.*;
-import javax.xml.parsers.*;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.Transformer;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 
 
