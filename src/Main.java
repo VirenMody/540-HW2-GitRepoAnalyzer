@@ -16,7 +16,7 @@ public class Main {
         
         // TODO: Update the LOCAL_PATH variable to the directory where you want remote GitHub repositories to be downloaded
         // NOTE: GitHub Repositories are downloaded locally before they are uploaded to your local GitLab server.
-        String LOCAL_PATH = "/home/virenmody/ClonedRepos/";
+        String LOCAL_PATH = "/Users/Viren/Google Drive/1. UIC/540 - Advanced Software Engineering Topics/ClonedRepos/";
 
 
         //Initialize GitHub API repository Object to download repository from GitHub
