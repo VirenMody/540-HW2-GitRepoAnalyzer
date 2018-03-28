@@ -19,7 +19,5 @@ dependencies {
 
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.11.0.201803080745-r'
 
-    compile group: 'org.gitlab4j', name: 'gitlab4j-api', version: '4.8.5'
-
-    compile group: 'com.offbytwo.jenkins', name: 'jenkins-client', version: '0.3.7'
+    compile group: 'org.kohsuke', name: 'github-api', version: '1.92'
 }
