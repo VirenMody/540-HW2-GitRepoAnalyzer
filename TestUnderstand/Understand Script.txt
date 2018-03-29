@@ -1,0 +1,12 @@
+String understandScript = "export PATH=$PATH:" + UNDERSTAND_PATH + "\n" +
+                            "und create -db project.udb -languages java\n" +
+                            "und add -db project.udb " + clonedReposPath + "\n" +
+                            "und -db project.udb analyze \n" +
+                            "und -db project.udb report";
+
+export PATH=$PATH:/home/virenmody/Downloads/scitools/bin/linux64/
+
+und create -db project.udb -languages java
+und add -db project.udb "C:\Users\Viren\Google Drive\1. UIC\540 - Advanced Software Engineering Topics\jasmine-maven-plugin"
+und -db project.udb analyze
+und -db project.udb report

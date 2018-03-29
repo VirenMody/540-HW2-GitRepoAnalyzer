@@ -3,6 +3,10 @@
 guillermo_rojas_hernandez_viren_mody_hw2.iml
 .idea/
 
+/TestUnderstand/TestUnderstand.iml
+/TestUnderstand/out/
+/TestUnderstand/.idea/
+
 #Gradle build untracked files
 /.gradle/
 /build/
