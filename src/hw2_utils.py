@@ -2,13 +2,14 @@
 import urllib.request
 from unidiff import PatchSet
 import understand
+import subprocess
 
 # Test Java Repository: guillermokrh/simple-java-changes
 
 def my_func():
     return 1
 
-
+# Understand Helper Functions
 def understand_entity_info(ent):
     print("---------------------")
     print("Entity Name: ", ent.name())
@@ -38,6 +39,11 @@ def understand_entity_info(ent):
     print("---------------------")
 
 
+def create_und_db(path):
+    subprocess.call('/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/understand_files/create_und.sh')
+
+
+# Patch File Helper Functions
 def patch_info(url):
     diff = urllib.request.urlopen(url)
     # Assume encoding is utf-8
@@ -80,6 +86,8 @@ if __name__=="__main__":
     url = 'https://github.com/guillermokrh/simple-java-changes/commit/ca33cf8c7f89766cae41a5100bad711043f37b44.patch'
     file_lists = patch_files(url)
     file_paths = patch_file_paths(file_lists)
+
+    create_und_db("path")
 
     print(file_lists)
     print(file_paths)
