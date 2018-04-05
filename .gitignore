@@ -7,7 +7,10 @@ guillermo_rojas_hernandez_viren_mody_hw2.iml
 /TestUnderstand/out/
 /TestUnderstand/.idea/
 
-#Gradle build untracked files
+# Gradle build untracked files
 /.gradle/
 /build/
 /gradle/
+
+# Understand Database files
+*.udb
