@@ -1,11 +1,42 @@
 
 import urllib.request
 from unidiff import PatchSet
+import understand
 
 # Test Java Repository: guillermokrh/simple-java-changes
 
 def my_func():
     return 1
+
+
+def understand_entity_info(ent):
+    print("---------------------")
+    print("Entity Name: ", ent.name())
+    print("Annotations: ", str(ent.annotations()))
+    print("Comments: ", str(ent.comments()))
+    print("Contents: ", ent.contents())
+    print("Depends: ", ent.depends())
+    print("Depends By: ", ent.dependsby())
+    print("Entities: ", str(ent.ents("")))
+    print("Filerefs: ", str(ent.filerefs()))
+    print("ID: ", str(ent.id()))
+    print("Kind: ", ent.kind())
+    print("Kindname: ", ent.kindname())
+    print("Language: " + ent.language())
+    print("Library: " + ent.library())
+    print("Longname: " + ent.longname())
+    print("Metrics: ", str(ent.metrics()))
+    print("Metric: ", ent.metric(ent.metrics()))
+    print("Name: ", ent.name())
+    print("Parameters: ", ent.parameters())
+    print("Parent: ", ent.parent())
+    print("Ref: ", ent.ref())
+    print("Refs: ", ent.refs())
+    print("Type: ", ent.type())
+    print("Uniquename: ", ent.uniquename())
+    print("Value: ", ent.value())
+    print("---------------------")
+
 
 def patch_info(url):
     diff = urllib.request.urlopen(url)
