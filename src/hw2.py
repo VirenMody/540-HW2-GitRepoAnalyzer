@@ -11,8 +11,8 @@ G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
 
 # TODO Create and execute a shell script to create udbs with downloaded commits
 # Open Database
-orig_db = understand.open(ORIG_DB_PATH)
-new_db = understand.open(NEW_DB_PATH)
+orig_db = understand.open(G_ORIG_DB_PATH)
+new_db = understand.open(G_NEW_DB_PATH)
 
 # Retrieve a list of all entities
 # - '~unresolved' entities are declared in Understand, but not defined
@@ -28,8 +28,8 @@ diff_list = []
 
 for o_ent, n_ent in zip(orig_ents, new_ents):
     # Using understand_entity_info():
-    # hw2_utils.understand_entity_info(o_ent)
-    # hw2_utils.understand_entity_info(n_ent)
+    hw2_utils.understand_entity_info(o_ent)
+    hw2_utils.understand_entity_info(n_ent)
 
     print('Entities: {}:{}'.format(o_ent, n_ent), (o_ent == n_ent))
     # print('Name: {}:{}'.format(o_ent.name(), n_ent.name()), o_ent.name() == n_ent.name())
