@@ -7,6 +7,12 @@ String understandScript = "export PATH=$PATH:" + UNDERSTAND_PATH + "\n" +
 export PATH=$PATH:/home/virenmody/Downloads/scitools/bin/linux64/
 
 und create -db project.udb -languages java
-und add -db project.udb "C:\Users\Viren\Google Drive\1. UIC\540 - Advanced Software Engineering Topics\jasmine-maven-plugin"
+und add -db project.udb "C:\Users\Viren\Google Drive\1.UIC\540\jasmine-maven-plugin"
 und -db project.udb analyze
 und -db project.udb report
+
+und -db project.udb create -languages java add "C:\Users\Viren\Google Drive\1.UIC\540\hw2\guillermo_rojas_hernandez_viren_mody_hw2\TestUnderstand\jasmine-maven-plugin" analyze
+
+und -db new.udb create -languages java add "C:\Users\Viren\Google Drive\1.UIC\540\New" analyze 
+
+und -db original.udb create -languages java add "C:\Users\Viren\Google Drive\1.UIC\540\Original" analyze
