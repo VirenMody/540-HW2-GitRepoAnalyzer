@@ -13,4 +13,7 @@ guillermo_rojas_hernandez_viren_mody_hw2.iml
 /gradle/
 
 # Understand Database files
-*.udb
+/*.udb
+/new.txt
+/original.txt
+/*_html/
