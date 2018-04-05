@@ -11,3 +11,6 @@ guillermo_rojas_hernandez_viren_mody_hw2.iml
 /.gradle/
 /build/
 /gradle/
+
+# Python cache
+/src/__pycache__/
