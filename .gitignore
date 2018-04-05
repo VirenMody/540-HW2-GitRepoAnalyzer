@@ -17,3 +17,6 @@ guillermo_rojas_hernandez_viren_mody_hw2.iml
 /new.txt
 /original.txt
 /*_html/
+
+# Python cache
+/src/__pycache__/
