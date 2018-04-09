@@ -5,6 +5,13 @@ import hw2_utils
 # TODO Retrieve Github pull requests and download commits
 git_hub = GitHub("virenmody", "a74c9704e00d767da4fe1d34aaf0ed8603d8ea11")
 print(git_hub)
+repo_owner = 'SquareSquash'
+repo_name = 'java'
+test_repo = git_hub.repository(repo_owner, repo_name)
+print(test_repo)
+pull_requests = test_repo.pull_requests('closed', None, None, 'created', 'desc', -1, None)
+print(pull_requests)
+
 
 # TODO Update the following to paths where commits are downloaded
 ORIG_DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/original.udb'
