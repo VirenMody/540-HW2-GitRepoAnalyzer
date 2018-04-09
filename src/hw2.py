@@ -9,9 +9,17 @@ repo_owner = 'SquareSquash'
 repo_name = 'java'
 test_repo = git_hub.repository(repo_owner, repo_name)
 print(test_repo)
-pull_requests = test_repo.pull_requests('closed', None, None, 'created', 'desc', -1, None)
+# pull_requests = test_repo.pull_requests('closed', None, None, 'created', 'desc', -1, None)
+pull_requests = [pr.refresh() for pr in test_repo.pull_requests('closed', None, None, 'created', 'desc', -1, None)]
 print(pull_requests)
-
+for pr in pull_requests:
+    # print(pr.title)
+    if pr.merged:
+        if pr.commits_count == 1:
+            print(pr.title)
+            print(pr.state)
+            print(pr.merged)
+            print(pr.patch())
 
 # TODO Update the following to paths where commits are downloaded
 ORIG_DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/original.udb'
