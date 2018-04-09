@@ -1,8 +1,10 @@
 from github3 import GitHub
 import understand
-import hw2_utils
+from src import hw2_utils
 
-# TODO Retrieve Github pull requests and download commits
+# TODO Search for Github Java repositories
+
+# TODO Retrieve Github pull requests
 git_hub = GitHub("virenmody", "a74c9704e00d767da4fe1d34aaf0ed8603d8ea11")
 print(git_hub)
 repo_owner = 'SquareSquash'
@@ -12,6 +14,7 @@ print(test_repo)
 # pull_requests = test_repo.pull_requests('closed', None, None, 'created', 'desc', -1, None)
 pull_requests = [pr.refresh() for pr in test_repo.pull_requests('closed', None, None, 'created', 'desc', -1, None)]
 print(pull_requests)
+commits = []
 for pr in pull_requests:
     # print(pr.title)
     if pr.merged:
@@ -19,7 +22,12 @@ for pr in pull_requests:
             print(pr.title)
             print(pr.state)
             print(pr.merged)
-            print(pr.patch())
+            # print(pr.patch())
+            commits = [commit.refresh() for commit in pr.commits(-1, None)]
+
+
+# TODO Download pull request commit and parent commit
+
 
 # TODO Update the following to paths where commits are downloaded
 ORIG_DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/original.udb'
