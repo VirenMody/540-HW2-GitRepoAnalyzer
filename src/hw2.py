@@ -3,6 +3,13 @@ from github3 import GitHub
 import understand
 from src import hw2_utils
 
+# TODO Make list of libraries/packages installed, specifications, etc.
+# - github3.py
+# - GitPython
+# - Understand for Python https://scitools.com/support/python-api/
+
+# - Python Interpreter 3.6.3
+
 # TODO Update the following to paths where commits are downloaded
 GITHUB_USERNAME = 'virenmody'
 GITHUB_ACCESS_TOKEN = 'a74c9704e00d767da4fe1d34aaf0ed8603d8ea11'
@@ -34,18 +41,19 @@ pull_requests = [pr.refresh() for pr in test_repo.pull_requests('closed', None, 
 # Retrieve the commits of all pull requests that have been merged and contain only 1 commit
 commits = []
 for pr in pull_requests:
-    # print(pr.title)
     if pr.merged:
-        if pr.commits_count == 1:
-            print('Title: ', pr.title)
-            # print(pr.patch())
-            commits = [commit.refresh() for commit in pr.commits(-1, None)]
+        # if pr.commits_count == 1:
+        print('Commit Title: ', pr.title)
+        # print(pr.patch())
+        commits = [commit.refresh() for commit in pr.commits(-1, None)]
+        print('Files: ', commits[0].files)
+        print('SHA: ', commits[0].sha)
+        print('Parents: ', commits[0].parents)
 
 
 # Clone the repository
 cloned_repo = Repo.clone_from(git_url, repo_dir)
-# assert cloned_repo.__class__ is Repo     # clone an existing repository
-# assert Repo.init(join(rw_dir, 'path/for/new/repo')).__class__ is Repo
+assert cloned_repo.__class__ is Repo     # clone an existing repository
 
 
 # TODO Create and execute a shell script to create udbs with downloaded commits
