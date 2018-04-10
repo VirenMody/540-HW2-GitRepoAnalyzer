@@ -2,6 +2,7 @@ from git import Repo
 from github3 import GitHub
 import understand
 from src import hw2_utils
+import subprocess
 
 # TODO Make list of libraries/packages installed, specifications, etc.
 # - github3.py
@@ -55,6 +56,16 @@ for pr in pull_requests:
 cloned_repo = Repo.clone_from(git_url, repo_dir)
 assert cloned_repo.__class__ is Repo     # clone an existing repository
 
+sha = '5ee62f9977659e03e39406adcc4f6859e4524a0e'
+
+# TODO Checkout pull request commit and the parent commit
+cmd = ['git', 'checkout', sha]
+p = subprocess.Popen(cmd, shell=True, cwd=repo_dir, stdout=subprocess.PIPE)
+# p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+for line in p.stdout:
+    print('LINE: ', line)
+p.wait()
+print('RETURN CODE: ', p.returncode)
 
 # TODO Create and execute a shell script to create udbs with downloaded commits
 # Open Database
