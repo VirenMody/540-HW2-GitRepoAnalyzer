@@ -39,6 +39,7 @@ test_repo = git_hub.repository(repo_owner, repo_name)
 # Retrieve all 'CLOSED' pull requests
 pull_requests = [pr.refresh() for pr in test_repo.pull_requests('closed', None, None, 'created', 'desc', -1, None)]
 
+# TODO pull correct hash for pull request commit and parent commit
 # Retrieve the commits of all pull requests that have been merged and contain only 1 commit
 commits = []
 for pr in pull_requests:
