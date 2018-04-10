@@ -40,7 +40,13 @@ def understand_entity_info(ent):
 
 
 def create_und_db(path):
-    subprocess.call('/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/understand_files/create_und.sh')
+    # subprocess.call('/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/understand_files/create_und.sh')
+    # subprocess.Popen('ls -la', shell=True)
+
+    subprocess.call('und create -db project.udb -languages java', shell=True)
+    subprocess.Popen('und add -db project.udb \"/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/old_db\"', shell=True)
+    subprocess.Popen('und -db project.udb analyze', shell=True)
+    subprocess.Popen('und -db project.udb report', shell=True)
 
 
 # Patch File Helper Functions
@@ -83,11 +89,11 @@ def patch_file_paths(file_lists):
 # Check if script is running as main
 if __name__=="__main__":
     # file_lists = []
-    url = 'https://github.com/guillermokrh/simple-java-changes/commit/ca33cf8c7f89766cae41a5100bad711043f37b44.patch'
-    file_lists = patch_files(url)
-    file_paths = patch_file_paths(file_lists)
+    # url = 'https://github.com/guillermokrh/simple-java-changes/commit/ca33cf8c7f89766cae41a5100bad711043f37b44.patch'
+    # file_lists = patch_files(url)
+    # file_paths = patch_file_paths(file_lists)
 
     create_und_db("path")
 
-    print(file_lists)
-    print(file_paths)
+    # print(file_lists)
+    # print(file_paths)
