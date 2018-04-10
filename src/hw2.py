@@ -1,39 +1,52 @@
+from git import Repo
 from github3 import GitHub
 import understand
 from src import hw2_utils
 
+# TODO Update the following to paths where commits are downloaded
+GITHUB_USERNAME = 'virenmody'
+GITHUB_ACCESS_TOKEN = 'a74c9704e00d767da4fe1d34aaf0ed8603d8ea11'
+
+LOCAL_CLONED_REPO_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/ClonedRepos/'
+ORIG_DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/original.udb'
+NEW_DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/new.udb'
+G_ORIG_DB_PATH = '/home/guillermo/cs540/java_project.udb'
+G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
+
+# Authenticate GitHub object
+git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
+
 # TODO Search for Github Java repositories
 
-# TODO Retrieve Github pull requests
-git_hub = GitHub("virenmody", "a74c9704e00d767da4fe1d34aaf0ed8603d8ea11")
-print(git_hub)
+# TODO Update repository owner and name based on search results
 repo_owner = 'SquareSquash'
 repo_name = 'java'
+git_url = 'https://github.com/' + repo_owner + '/' + repo_name + '.git'
+repo_dir = LOCAL_CLONED_REPO_PATH + repo_owner + '/' + repo_name
+print(repo_dir)
+
+# Retrieve repository object
 test_repo = git_hub.repository(repo_owner, repo_name)
-print(test_repo)
-# pull_requests = test_repo.pull_requests('closed', None, None, 'created', 'desc', -1, None)
+
+# Retrieve all 'CLOSED' pull requests
 pull_requests = [pr.refresh() for pr in test_repo.pull_requests('closed', None, None, 'created', 'desc', -1, None)]
-print(pull_requests)
+
+# Retrieve the commits of all pull requests that have been merged and contain only 1 commit
 commits = []
 for pr in pull_requests:
     # print(pr.title)
     if pr.merged:
         if pr.commits_count == 1:
-            print(pr.title)
-            print(pr.state)
-            print(pr.merged)
+            print('Title: ', pr.title)
             # print(pr.patch())
             commits = [commit.refresh() for commit in pr.commits(-1, None)]
 
 
-# TODO Download pull request commit and parent commit
+# Clone the repository
+cloned_repo = Repo.clone_from(git_url, repo_dir)
+# assert cloned_repo.__class__ is Repo     # clone an existing repository
+# assert Repo.init(join(rw_dir, 'path/for/new/repo')).__class__ is Repo
 
-
-# TODO Update the following to paths where commits are downloaded
-ORIG_DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/original.udb'
-NEW_DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/new.udb'
-G_ORIG_DB_PATH = '/home/guillermo/cs540/java_project.udb'
-G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
 
 # TODO Create and execute a shell script to create udbs with downloaded commits
 # Open Database
