@@ -90,7 +90,7 @@ def patch_info(url):
     print("Removed Files: " + str(removed_files))
 
 
-# Stores files in file struct, 0: added, 1: deleted, 2: modified
+# Stores files in file struct, 0: added, 1: modified, 2: deleted
 def patch_files(url):
     files = []
     diff = urllib.request.urlopen(url)
@@ -102,7 +102,6 @@ def patch_files(url):
     files.append(patch.removed_files)
 
     return files
-
 
 def patch_file_paths(file_lists):
     file_paths = []
@@ -185,6 +184,14 @@ def create_xml_output():
 
 # Check if script is running as main
 if __name__=="__main__":
-    db_name = 'old.udb'
-    dir_to_analyze = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/old_db'
-    create_und_db(db_name, dir_to_analyze)
+    # db_name = 'old.udb'
+    # dir_to_analyze = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/old_db'
+    # create_und_db(db_name, dir_to_analyze)
+
+    file_lists = []
+    url = 'https://github.com/guillermokrh/simple-java-changes/commit/ca33cf8c7f89766cae41a5100bad711043f37b44.patch'
+    file_lists = patch_files(url)
+    file_paths = patch_file_paths(file_lists)
+
+    print(file_lists)
+    print(file_paths)
