@@ -24,6 +24,8 @@ G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
 # Authenticate GitHub object
 git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 
+
+
 # TODO Search for Github Java repositories
 
 # TODO Update repository owner and name based on search results
@@ -60,35 +62,16 @@ for pr in pull_requests:
         print('SHA: ', pr_commit_hash)
         print('Parents HASH: ', pr_parent_hash)
 
-        # TODO organize this into functions
         # TODO create Understand DB based on pull request commit and parent commit
-        # Checkout pull request parent commit
-        cmd = ['git', 'checkout', pr_parent_hash]
-        p = subprocess.Popen(cmd, shell=True, cwd=repo_dir, stdout=subprocess.PIPE)
-        # p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        for line in p.stdout:
-            print('LINE: ', line)
-        p.wait()
-        print('RETURN CODE: ', p.returncode)
+        # Checkout pull-request's parent commit TODO create udb for commit
+        hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], repo_dir)
+        hw2_utils.create_und_db()
 
-        # Checkout pull request's parent commit
-        cmd = ['git', 'checkout', pr_commit_hash]
-        p = subprocess.Popen(cmd, shell=True, cwd=repo_dir, stdout=subprocess.PIPE)
-        # p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        for line in p.stdout:
-            print('LINE: ', line)
-        p.wait()
-        print('RETURN CODE: ', p.returncode)
+        # Checkout pull-request's commit TODO create udb for commit
+        hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], repo_dir)
 
         # Checkout master
-        cmd = ['git', 'checkout', 'master']
-        p = subprocess.Popen(cmd, shell=True, cwd=repo_dir, stdout=subprocess.PIPE)
-        # p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        for line in p.stdout:
-            print('LINE: ', line)
-        p.wait()
-        print('RETURN CODE: ', p.returncode)
-
+        hw2_utils.execute_command(['git', 'checkout', 'master'], repo_dir)
 
 
 # TODO Create and execute a shell script to create udbs with downloaded commits

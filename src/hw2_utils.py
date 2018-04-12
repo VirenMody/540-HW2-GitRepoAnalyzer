@@ -1,13 +1,13 @@
-
 import urllib.request
 from unidiff import PatchSet
-import understand
 import subprocess
 
 # Test Java Repository: guillermokrh/simple-java-changes
 
+
 def my_func():
     return 1
+
 
 # Understand Helper Functions
 def understand_entity_info(ent):
@@ -39,14 +39,35 @@ def understand_entity_info(ent):
     print("---------------------")
 
 
-def create_und_db(path):
-    # subprocess.call('/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/understand_files/create_und.sh')
-    # subprocess.Popen('ls -la', shell=True)
+# TODO Update parameters
+def create_und_db(db_name, dir_to_analyze):
+    """
+    Function to create Understand database for given repo
+    :param db_name: repo database name
+    :param dir_to_analyze: repo to be analyzed
+    :return:
+    """
+    und_cmd = ['und', '-db', db_name, 'create', '-languages', 'java', 'add', dir_to_analyze, 'analyze']
+    execute_command(und_cmd)
 
-    subprocess.call('und create -db project.udb -languages java', shell=True)
-    subprocess.Popen('und add -db project.udb \"/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/old_db\"', shell=True)
-    subprocess.Popen('und -db project.udb analyze', shell=True)
-    subprocess.Popen('und -db project.udb report', shell=True)
+
+# TODO remove extra print line stuff
+def execute_command(command, dir=None):
+    """
+    Function executes given command on CLI
+    :param command: to be executed on CLI
+    :param dir: path to directory
+    :return:
+    """
+    if dir is None:
+        p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+    else:
+        p = subprocess.Popen(command, shell=True, cwd=dir, stdout=subprocess.PIPE)
+
+    for line in p.stdout:
+        print('LINE: ', line)
+    p.wait()
+    print('RETURN CODE: ', p.returncode)
 
 
 # Patch File Helper Functions
@@ -77,6 +98,7 @@ def patch_files(url):
 
     return files
 
+
 def patch_file_paths(file_lists):
     file_paths = []
     for file_list in file_lists:
@@ -93,7 +115,9 @@ if __name__=="__main__":
     # file_lists = patch_files(url)
     # file_paths = patch_file_paths(file_lists)
 
-    create_und_db("path")
+    db_name = 'old.udb'
+    dir_to_analyze = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/old_db'
+    create_und_db(db_name, dir_to_analyze)
 
     # print(file_lists)
     # print(file_paths)
