@@ -16,10 +16,8 @@ GITHUB_USERNAME = 'virenmody'
 GITHUB_ACCESS_TOKEN = 'a74c9704e00d767da4fe1d34aaf0ed8603d8ea11'
 
 LOCAL_CLONED_REPO_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/ClonedRepos/'
-ORIG_DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/original.udb'
-NEW_DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/new.udb'
-G_ORIG_DB_PATH = '/home/guillermo/cs540/java_project.udb'
-G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
+DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/src/'
+G_DB_PATH = '/home/guillermo/cs540/java_project.udb'
 
 # Authenticate GitHub object
 git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
@@ -61,7 +59,8 @@ for pr in pull_requests:
 
         # Checkout pull-request's commit and create Understand DB on it
         hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], repo_dir)
-        hw2_utils.create_und_db('pr_commit.udb', repo_dir)
+        hw2_utils.create_und_db('pr_current_commit.udb', repo_dir)
+        break
 
 # TODO Look into:
 # - commits[0].files
@@ -69,25 +68,27 @@ for pr in pull_requests:
 # - limiting number of commits per patch
 
 # Open Database
-orig_db = understand.open(G_ORIG_DB_PATH)
-new_db = understand.open(G_NEW_DB_PATH)
+print(DB_PATH + 'pr_parent_commit.udb')
+print(DB_PATH + 'pr_current_commit.udb')
+parent_db = understand.open(DB_PATH + 'pr_parent_commit.udb')
+current_db = understand.open(DB_PATH + 'pr_current_commit.udb')
 
 # Retrieve a list of all entities
 # - '~unresolved' entities are declared in Understand, but not defined
 # - '~volatile' TODO What is volatile
 # TODO limit which entities are retrieved based on patch files
 # TODO find list of kind search parameters
-orig_ents = orig_db.ents('~unresolved ~volatile')
-new_ents = new_db.ents('~unresolved ~volatile')
+parent_ents = parent_db.ents('~unresolved ~volatile')
+current_ents = current_db.ents('~unresolved ~volatile')
 
 
 # Iterate through entity lists to find and categorize differences
 diff_list = []
 
-for o_ent, n_ent in zip(orig_ents, new_ents):
+for o_ent, n_ent in zip(parent_ents, current_ents):
     # Using understand_entity_info():
-    hw2_utils.understand_entity_info(o_ent)
-    hw2_utils.understand_entity_info(n_ent)
+    # hw2_utils.understand_entity_info(o_ent)
+    # hw2_utils.understand_entity_info(n_ent)
 
     print('Entities: {}:{}'.format(o_ent, n_ent), (o_ent == n_ent))
     # print('Name: {}:{}'.format(o_ent.name(), n_ent.name()), o_ent.name() == n_ent.name())

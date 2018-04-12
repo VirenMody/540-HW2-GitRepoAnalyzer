@@ -16,3 +16,8 @@ und -db project.udb create -languages java add "C:\Users\Viren\Google Drive\1.UI
 und -db new.udb create -languages java add "C:\Users\Viren\Google Drive\1.UIC\540\New" analyze 
 
 und -db original.udb create -languages java add "C:\Users\Viren\Google Drive\1.UIC\540\Original" analyze
+
+
+und -db 540TestRepo.udb create -languages java add "C:\Users\Viren\Google Drive\1.UIC\540\540TestRepo" analyze report
+
+und -db 540TestRepoNew.udb create -languages java add "C:\Users\Viren\Google Drive\1.UIC\540\540TestRepoNew" analyze report
