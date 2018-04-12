@@ -7,6 +7,89 @@ from github3 import GitHub
 import hw2_utils
 import understand
 
+
+def understand_dict_parsing():
+    parent_db = understand.open('/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/und_db/squaresquash_before.udb')
+    current_db = understand.open('/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/und_db/squaresquash_after.udb')
+
+    # Retrieve a list of all entities
+    # - '~unresolved' entities are declared in Understand, but not defined
+    # - '~volatile' TODO What is volatile
+    # TODO limit which entities are retrieved based on patch files
+    # TODO find list of kind search parameters
+
+    '''
+    print("Parent Database------------------------------------")
+    hw2_utils.print_entities(parent_db)
+    print("Current Database------------------------------------")
+    hw2_utils.print_entities(current_db)
+    '''
+
+    #with open('file.txt', 'w') as f:
+    #print(hw2_utils.print_entities(current_db), file=f)
+
+    parent_db_dict = {}
+    current_db_dict = {}
+
+    for entity in parent_db.ents('~unresolved ~volatile'):
+        key = entity.name() + '-' + str(entity.kind()) + '-' + str(entity.parent())
+        parent_db_dict[key] = entity
+
+    for entity in current_db.ents('~unresolved ~volatile'):
+        key = entity.name() + '-' + str(entity.kind()) + '-' + str(entity.parent())
+        current_db_dict[key] = entity
+
+    #print("Parent Database------------------------------------")
+    #print(parent_db_dict)
+    #print("Current Database------------------------------------")
+    #print(current_db_dict)
+
+    print("Parent Keys")
+    for key in sorted(parent_db_dict):
+        print(key + ": " + str(parent_db_dict[key]))
+
+    print("Current Keys")
+    for key in sorted(current_db_dict):
+        print(key + ": " + str(current_db_dict[key]))
+
+    parent_dict_checklist = parent_db_dict.copy()
+    current_dict_checklist = current_db_dict.copy()
+
+    # parent to child changes
+    matches = 0
+    no_matches = 0
+    not_in_new_db = 0
+    for key in sorted(parent_db_dict):
+        if key not in current_db_dict:
+            not_in_new_db+=1
+            print(key + " is not in current dictionary")
+            continue
+        if key in current_db_dict and hw2_utils.is_entity_match(parent_db_dict[key], current_db_dict[key]):
+            print (key + " is match.")
+            matches+=1
+            #print ("Parent Entity info")
+            #hw2_utils.understand_entity_info(parent_db_dict[key])
+            #print ("Current Entity info")
+            #hw2_utils.understand_entity_info(current_db_dict[key])
+        else:
+            print (key + " is not match")
+            no_matches+=1
+            #print ("Parent Entity info")
+            #hw2_utils.understand_entity_info(parent_db_dict[key])
+            #print ("Current Entity info")
+            #hw2_utils.understand_entity_info(current_db_dict[key])
+
+    print("total matches:" + str(matches))
+    print("total no matches:" + str(no_matches))
+    print("total not in new dictionary:" + str(not_in_new_db))
+
+    print("------Squash entry-------")
+    hw2_utils.understand_entity_info(parent_db_dict['SquashEntry.message-Variable-squash.SquashEntry'])
+
+    print("---Squash entry entities-------")
+    hw2_utils.print_entities(parent_db_dict['SquashEntry.message-Variable-squash.SquashEntry'])
+
+
 # TODO Make list of libraries/packages installed, specifications, etc.
 # - github3.py
 # - GitPython

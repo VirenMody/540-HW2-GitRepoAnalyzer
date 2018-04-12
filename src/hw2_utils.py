@@ -10,10 +10,6 @@ from xml.dom import minidom
 # Test Java Repository: guillermokrh/simple-java-changes
 
 
-def my_func():
-    return 1
-
-
 # Understand Helper Functions
 def understand_entity_info(ent):
     print("---------------------")
@@ -42,6 +38,20 @@ def understand_entity_info(ent):
     print("Uniquename: ", ent.uniquename())
     print("Value: ", ent.value())
     print("---------------------")
+
+
+def print_entities(db):
+    current_ents = db.ents('~unresolved ~volatile')
+    for ent in current_ents:
+        understand_entity_info(ent)
+
+
+def is_entity_match(ent1, ent2):
+    if len(ent1.refs()) == len(ent2.refs()) and \
+            len(ent1.ents("")) == len(ent2.ents("")):
+        return True
+    else:
+        return False
 
 
 # TODO Update parameters
