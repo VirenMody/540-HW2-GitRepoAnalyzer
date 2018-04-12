@@ -1,7 +1,10 @@
-from src import hw2_utils
+# from src import hw2_utils
 
 from git import Repo
 from github3 import GitHub
+# import git
+# import github3
+import hw2_utils
 import understand
 
 # TODO Make list of libraries/packages installed, specifications, etc.
@@ -10,14 +13,19 @@ import understand
 # - Understand for Python https://scitools.com/support/python-api/
 
 # - Python Interpreter 3.6.3
-
 # TODO Update the following to paths where commits are downloaded
 GITHUB_USERNAME = 'virenmody'
 GITHUB_ACCESS_TOKEN = 'a74c9704e00d767da4fe1d34aaf0ed8603d8ea11'
 
 LOCAL_CLONED_REPO_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/ClonedRepos/'
+
 DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/src/'
+
 G_DB_PATH = '/home/guillermo/cs540/java_project.udb'
+G_ORIG_DB_PATH = '/home/guillermo/cs540/java_project.udb'
+G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
+G_LOCAL_CLONED_REPO_PATH = '/home/guillermo/cs540/cloned_repos/'
+
 
 # Authenticate GitHub object
 git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
@@ -29,10 +37,12 @@ git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 repo_owner = 'SquareSquash'
 repo_name = 'java'
 git_url = 'https://github.com/' + repo_owner + '/' + repo_name + '.git'
-repo_dir = LOCAL_CLONED_REPO_PATH + repo_owner + repo_name
+repo_dir = G_LOCAL_CLONED_REPO_PATH + repo_owner + repo_name
 
 # Clone the repository
 print('Cloning ' + repo_owner + '/' +repo_name + ' to repo directory: ' + repo_dir)
+
+
 cloned_repo = Repo.clone_from(git_url, repo_dir)
 assert cloned_repo.__class__ is Repo  # clone an existing repository
 
@@ -109,3 +119,4 @@ for o_ent, n_ent in zip(parent_ents, current_ents):
         diff_list.append(['value', o_ent.ref().file().name(), o_ent.value(), n_ent.value()])
 
 print(diff_list)
+
