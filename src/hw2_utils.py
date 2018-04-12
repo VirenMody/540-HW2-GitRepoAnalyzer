@@ -3,6 +3,11 @@ import urllib.request
 from unidiff import PatchSet
 import understand
 import subprocess
+import os
+import pandas as pd
+import numpy as np
+from xml.etree.ElementTree import Element, SubElement, Comment, tostring
+from xml.dom import minidom
 
 # Test Java Repository: guillermokrh/simple-java-changes
 
@@ -43,10 +48,12 @@ def create_und_db(path):
     # subprocess.call('/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/understand_files/create_und.sh')
     # subprocess.Popen('ls -la', shell=True)
 
-    subprocess.call('und create -db project.udb -languages java', shell=True)
-    subprocess.Popen('und add -db project.udb \"/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/old_db\"', shell=True)
-    subprocess.Popen('und -db project.udb analyze', shell=True)
-    subprocess.Popen('und -db project.udb report', shell=True)
+    # test = subprocess.Popen('und create -db project.udb -languages java')
+    cmd = 'ls -la'
+    os.system('und create -db project.udb -languages java')
+    # subprocess.Popen("und add -db project.udb \"/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/old_db\"", shell=True)
+    #subprocess.Popen('und -db project.udb analyze', shell=True)
+    #subprocess.Popen('und -db project.udb report', shell=True)
 
 
 # Patch File Helper Functions
@@ -77,6 +84,7 @@ def patch_files(url):
 
     return files
 
+
 def patch_file_paths(file_lists):
     file_paths = []
     for file_list in file_lists:
@@ -85,6 +93,76 @@ def patch_file_paths(file_lists):
 
     return file_paths
 
+def create_pandas_db():
+
+    df = pd.DataFrame({'Method': 'm1',
+                       'ChangeType': pd.Categorical(["parameter", "if_statement", "return_type", "return_value"]),
+                       'ChangeValue': pd.Series(1, index=list(range(4)), dtype='int32'),
+                       'F': ['foo', 'bar', 'fizz', 'buzz']})
+    print(df)
+
+'''
+output of create_xml_output(): 
+<output>
+    <method>m1
+        <frequency> 20 </frequency>
+        <file> f.java </file>
+        <change>
+            <parameter> salary
+                <oldtype>int</oldtype>
+                <newtype>double</newtype>
+            </parameter>
+        </change>
+        <change>
+            <ifstatement> salary
+                <addcondition>if salary \gt 0 return true<addcondition>
+            </ifstatement>
+        </change>
+    </method>
+</output>
+'''
+# method: 'm1',
+# frequency: '20',
+# file: 'f.java',
+### first tuple is tag name, text, remaining tuples are the children for that change
+# change list: [
+#                  [('parameter', 'salary'), ('oldtype','int'), ('newtype','int')],
+#                  [('ifstatement', 'salary'), ('addcondition', 'if salary \gt 0 return true')]
+#              ]
+def create_xml_output():
+    output = Element('output')
+    title = Comment('Output of Changes for CS540 HMW2')
+
+    output.append(title)
+    method = SubElement(output, 'method')
+    method.text = 'ml'
+
+    frequency = SubElement(method, 'frequency')
+    frequency.text = '20'
+    
+    file = SubElement(method, 'file')
+    file.text = 'f.java'
+
+    # First Change
+    change = SubElement(method, 'change')
+
+    parameter = SubElement(change, 'parameter')
+    parameter.text = 'salary'
+
+    old_type = SubElement(parameter, 'oldtype')
+    old_type.text = 'int'
+    new_type = SubElement(parameter, 'newtype')
+    new_type.text = 'double'
+
+    # Second change
+    change2 = SubElement(method, 'change')
+    ifstatement = SubElement(change2, 'ifstatement')
+    ifstatement.text = 'salary'
+    addcondition = SubElement(ifstatement, 'addcondition')
+    addcondition.text = 'if salary \gt 0 return true'
+
+    print(tostring(output))
+
 
 # Check if script is running as main
 if __name__=="__main__":
@@ -92,8 +170,8 @@ if __name__=="__main__":
     # url = 'https://github.com/guillermokrh/simple-java-changes/commit/ca33cf8c7f89766cae41a5100bad711043f37b44.patch'
     # file_lists = patch_files(url)
     # file_paths = patch_file_paths(file_lists)
-
-    create_und_db("path")
-
+    # create_und_db("path")
     # print(file_lists)
     # print(file_paths)
+    create_pandas_db()
+    # create_xml_output()
