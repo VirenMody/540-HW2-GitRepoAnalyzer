@@ -1,8 +1,8 @@
+from src import hw2_utils
+
 from git import Repo
 from github3 import GitHub
 import understand
-from src import hw2_utils
-import subprocess
 
 # TODO Make list of libraries/packages installed, specifications, etc.
 # - github3.py
@@ -23,7 +23,6 @@ G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
 
 # Authenticate GitHub object
 git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
-
 
 
 # TODO Search for Github Java repositories
@@ -52,29 +51,23 @@ pr_commit_hash = ''
 pr_parent_hash = ''
 for pr in pull_requests:
     if pr.merged:
-        # if pr.commits_count == 1:
-        print('Commit Title: ', pr.title)
-        # print(pr.patch())
         commits = [commit.refresh() for commit in pr.commits(-1, None)]
-        print('Files: ', commits[0].files)
         pr_commit_hash = commits[0].sha
         pr_parent_hash = commits[0].parents[0]['sha']
-        print('SHA: ', pr_commit_hash)
-        print('Parents HASH: ', pr_parent_hash)
 
-        # TODO create Understand DB based on pull request commit and parent commit
-        # Checkout pull-request's parent commit TODO create udb for commit
+        # Checkout pull-request's parent commit and create Understand DB on it
         hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], repo_dir)
-        hw2_utils.create_und_db()
+        hw2_utils.create_und_db('pr_parent_commit.udb', repo_dir)
 
-        # Checkout pull-request's commit TODO create udb for commit
+        # Checkout pull-request's commit and create Understand DB on it
         hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], repo_dir)
+        hw2_utils.create_und_db('pr_commit.udb', repo_dir)
 
-        # Checkout master
-        hw2_utils.execute_command(['git', 'checkout', 'master'], repo_dir)
+# TODO Look into:
+# - commits[0].files
+# - pr.patch()
+# - limiting number of commits per patch
 
-
-# TODO Create and execute a shell script to create udbs with downloaded commits
 # Open Database
 orig_db = understand.open(G_ORIG_DB_PATH)
 new_db = understand.open(G_NEW_DB_PATH)
