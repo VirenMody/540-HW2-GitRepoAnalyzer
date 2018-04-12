@@ -13,6 +13,7 @@ guillermo_rojas_hernandez_viren_mody_hw2.iml
 /build/
 
 # Understand Database files
+/src/*.udb
 /*.udb
 /new.txt
 /original.txt
