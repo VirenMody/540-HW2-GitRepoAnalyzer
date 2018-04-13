@@ -2,10 +2,56 @@
 
 from git import Repo
 from github3 import GitHub
-# import git
-# import github3
+from github3 import search_issues
+import github3
+#import git
+#import github3
 import hw2_utils
 import understand
+
+
+def understand_simultaneous_entity_iteration():
+    # Open Database
+    print(DB_PATH + 'pr_parent_commit.udb')
+    print(DB_PATH + 'pr_current_commit.udb')
+    parent_db = understand.open(DB_PATH + 'pr_parent_commit.udb')
+    current_db = understand.open(DB_PATH + 'pr_current_commit.udb')
+
+    # Retrieve a list of all entities
+    # - '~unresolved' entities are declared in Understand, but not defined
+    # - '~volatile' TODO What is volatile
+    # TODO limit which entities are retrieved based on patch files
+    # TODO find list of kind search parameters
+    parent_ents = parent_db.ents('~unresolved ~volatile')
+    current_ents = current_db.ents('~unresolved ~volatile')
+
+    # Iterate through entity lists to find and categorize differences
+    diff_list = []
+
+    for o_ent, n_ent in zip(parent_ents, current_ents):
+        # Using understand_entity_info():
+        # hw2_utils.understand_entity_info(o_ent)
+        # hw2_utils.understand_entity_info(n_ent)
+
+        print('Entities: {}:{}'.format(o_ent, n_ent), (o_ent == n_ent))
+        # print('Name: {}:{}'.format(o_ent.name(), n_ent.name()), o_ent.name() == n_ent.name())
+        # print('Parent: {}:{}'.format(o_ent.parent(), n_ent.parent()), o_ent.parent() == n_ent.parent())
+        # print('Type: {}:{}'.format(o_ent.type(), n_ent.type()), o_ent.type() == n_ent.type())
+        # print('Kind: {}:{}'.format(o_ent.kind(), n_ent.kind()), o_ent.kind() == n_ent.kind())
+        # print('Value: {}:{}'.format(o_ent.value(), n_ent.value()), o_ent.value() == n_ent.value(), '\n')
+        # print(o_ent.ref().file())
+
+        if o_ent.name() != n_ent.name():
+            print('Found a diff')
+            diff_list.append(['name', o_ent.ref().file().name(), o_ent.name(), n_ent.name()])
+        if o_ent.type() != n_ent.type():
+            print('Found a diff')
+            diff_list.append(['type', o_ent.ref().file().name(), o_ent.type().name, n_ent.type().name()])
+        if o_ent.value() != n_ent.value():
+            print('Found a diff')
+            diff_list.append(['value', o_ent.ref().file().name(), o_ent.value(), n_ent.value()])
+
+    print(diff_list)
 
 
 def understand_dict_parsing():
@@ -116,6 +162,22 @@ git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 
 # TODO Search for Github Java repositories
 
+q = "language:java is:pr label:bug is:closed"
+issue_search_result = git_hub.search_issues(query=q, number=10)
+issues = []
+for i in issue_search_result:
+    issues.append(i)
+
+print("html urls for all issues")
+for i in issues:
+    print(i.issue.html_url)
+    print(i._json_data['repository_url'])
+
+
+print("issue search result")
+print(issue_search_result)
+
+
 # TODO Update repository owner and name based on search results
 repo_owner = 'SquareSquash'
 repo_name = 'java'
@@ -146,60 +208,19 @@ for pr in pull_requests:
         pr_commit_hash = commits[0].sha
         pr_parent_hash = commits[0].parents[0]['sha']
 
+        print("pull request commit hash: " + pr_commit_hash)
+        print("parent request commit hash: " + pr_parent_hash)
         # Checkout pull-request's parent commit and create Understand DB on it
-        hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], repo_dir)
-        hw2_utils.create_und_db('pr_parent_commit.udb', repo_dir)
+        # hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], repo_dir)
+        # hw2_utils.create_und_db('pr_parent_commit.udb', repo_dir)
 
         # Checkout pull-request's commit and create Understand DB on it
-        hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], repo_dir)
-        hw2_utils.create_und_db('pr_current_commit.udb', repo_dir)
+        # hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], repo_dir)
+        # hw2_utils.create_und_db('pr_current_commit.udb', repo_dir)
         break
 
 # TODO Look into:
 # - commits[0].files
 # - pr.patch()
 # - limiting number of commits per patch
-
-# Open Database
-print(DB_PATH + 'pr_parent_commit.udb')
-print(DB_PATH + 'pr_current_commit.udb')
-parent_db = understand.open(DB_PATH + 'pr_parent_commit.udb')
-current_db = understand.open(DB_PATH + 'pr_current_commit.udb')
-
-# Retrieve a list of all entities
-# - '~unresolved' entities are declared in Understand, but not defined
-# - '~volatile' TODO What is volatile
-# TODO limit which entities are retrieved based on patch files
-# TODO find list of kind search parameters
-parent_ents = parent_db.ents('~unresolved ~volatile')
-current_ents = current_db.ents('~unresolved ~volatile')
-
-
-# Iterate through entity lists to find and categorize differences
-diff_list = []
-
-for o_ent, n_ent in zip(parent_ents, current_ents):
-    # Using understand_entity_info():
-    # hw2_utils.understand_entity_info(o_ent)
-    # hw2_utils.understand_entity_info(n_ent)
-
-    print('Entities: {}:{}'.format(o_ent, n_ent), (o_ent == n_ent))
-    # print('Name: {}:{}'.format(o_ent.name(), n_ent.name()), o_ent.name() == n_ent.name())
-    # print('Parent: {}:{}'.format(o_ent.parent(), n_ent.parent()), o_ent.parent() == n_ent.parent())
-    # print('Type: {}:{}'.format(o_ent.type(), n_ent.type()), o_ent.type() == n_ent.type())
-    # print('Kind: {}:{}'.format(o_ent.kind(), n_ent.kind()), o_ent.kind() == n_ent.kind())
-    # print('Value: {}:{}'.format(o_ent.value(), n_ent.value()), o_ent.value() == n_ent.value(), '\n')
-    # print(o_ent.ref().file())
-
-    if o_ent.name() != n_ent.name():
-        print('Found a diff')
-        diff_list.append(['name', o_ent.ref().file().name(), o_ent.name(), n_ent.name()])
-    if o_ent.type() != n_ent.type():
-        print('Found a diff')
-        diff_list.append(['type', o_ent.ref().file().name(), o_ent.type().name, n_ent.type().name()])
-    if o_ent.value() != n_ent.value():
-        print('Found a diff')
-        diff_list.append(['value', o_ent.ref().file().name(), o_ent.value(), n_ent.value()])
-
-print(diff_list)
 
