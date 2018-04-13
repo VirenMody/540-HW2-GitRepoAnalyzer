@@ -1,8 +1,8 @@
 from src import hw2_utils
+# import hw2_utils
 
 from git import Repo
 from github3 import GitHub
-# import hw2_utils
 import understand
 import ntpath
 
@@ -24,8 +24,8 @@ def understand_dict_parsing():
     hw2_utils.print_entities(current_db)
     '''
 
-    #with open('file.txt', 'w') as f:
-    #print(hw2_utils.print_entities(current_db), file=f)
+    # with open('file.txt', 'w') as f:
+    # print(hw2_utils.print_entities(current_db), file=f)
 
     parent_db_dict = {}
     current_db_dict = {}
@@ -38,10 +38,10 @@ def understand_dict_parsing():
         key = entity.name() + '-' + str(entity.kind()) + '-' + str(entity.parent())
         current_db_dict[key] = entity
 
-    #print("Parent Database------------------------------------")
-    #print(parent_db_dict)
-    #print("Current Database------------------------------------")
-    #print(current_db_dict)
+    # print("Parent Database------------------------------------")
+    # print(parent_db_dict)
+    # print("Current Database------------------------------------")
+    # print(current_db_dict)
 
     print("Parent Keys")
     for key in sorted(parent_db_dict):
@@ -60,23 +60,23 @@ def understand_dict_parsing():
     not_in_new_db = 0
     for key in sorted(parent_db_dict):
         if key not in current_db_dict:
-            not_in_new_db+=1
+            not_in_new_db += 1
             print(key + " is not in current dictionary")
             continue
         if key in current_db_dict and hw2_utils.is_entity_match(parent_db_dict[key], current_db_dict[key]):
-            print (key + " is match.")
-            matches+=1
-            #print ("Parent Entity info")
-            #hw2_utils.understand_entity_info(parent_db_dict[key])
-            #print ("Current Entity info")
-            #hw2_utils.understand_entity_info(current_db_dict[key])
+            print(key + " is match.")
+            matches += 1
+            # print ("Parent Entity info")
+            # hw2_utils.understand_entity_info(parent_db_dict[key])
+            # print ("Current Entity info")
+            # hw2_utils.understand_entity_info(current_db_dict[key])
         else:
-            print (key + " is not match")
-            no_matches+=1
-            #print ("Parent Entity info")
-            #hw2_utils.understand_entity_info(parent_db_dict[key])
-            #print ("Current Entity info")
-            #hw2_utils.understand_entity_info(current_db_dict[key])
+            print(key + " is not match")
+            no_matches += 1
+            # print ("Parent Entity info")
+            # hw2_utils.understand_entity_info(parent_db_dict[key])
+            # print ("Current Entity info")
+            # hw2_utils.understand_entity_info(current_db_dict[key])
 
     print("total matches:" + str(matches))
     print("total no matches:" + str(no_matches))
@@ -88,12 +88,18 @@ def understand_dict_parsing():
     print("---Squash entry entities-------")
     hw2_utils.print_entities(parent_db_dict['SquashEntry.message-Variable-squash.SquashEntry'])
 
+
 # TODO Make list of libraries/packages installed, specifications, etc.
 # - github3.py
 # - GitPython
 # - Understand for Python https://scitools.com/support/python-api/
-
+# - ntpath
 # - Python Interpreter 3.6.3
+
+# TODO add unit/integration testing
+# TODO better commenting
+# TODO exception handling
+
 
 # TODO Update the following to paths where commits are downloaded
 GITHUB_USERNAME = 'virenmody'
@@ -107,9 +113,11 @@ G_ORIG_DB_PATH = '/home/guillermo/cs540/java_project.udb'
 G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
 G_LOCAL_CLONED_REPO_PATH = '/home/guillermo/cs540/cloned_repos/'
 
+# Create Pandas "database" (DataFrame) to store changes
+db_changes = hw2_utils.create_changes_db()
+
 # Authenticate GitHub object
 git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
-
 
 # TODO Search for Github Java repositories
 
@@ -122,9 +130,9 @@ current_repo_dir = LOCAL_CLONED_REPO_PATH + repo_owner + repo_name + 'current'
 
 # Clone the repository
 # parent_cloned_repo = Repo.clone_from(git_url, parent_repo_dir)
-# print('Cloned ' + repo_owner + '/' +repo_name + ' to repo directory: ' + parent_repo_dir)
+# print('Cloned ' + repo_owner + '/' + repo_name + ' to repo directory: ' + parent_repo_dir)
 # current_cloned_repo = Repo.clone_from(git_url, current_repo_dir)
-# print('Cloned ' + repo_owner + '/' +repo_name + ' to repo directory: ' + current_repo_dir)
+# print('Cloned ' + repo_owner + '/' + repo_name + ' to repo directory: ' + current_repo_dir)
 
 # Retrieve repository object
 test_repo = git_hub.repository(repo_owner, repo_name)
@@ -162,7 +170,8 @@ for pr in pull_requests:
         patch_files = hw2_utils.patch_files(pr.patch_url)
         modified_files = patch_files[1]
 
-        # TODO Check if ntpath works on non-Windows systems (https://stackoverflow.com/questions/8384737/extract-file-name-from-path-no-matter-what-the-os-path-format)
+        # TODO Check if ntpath works on non-Windows systems
+        # https://stackoverflow.com/questions/8384737/extract-file-name-from-path-no-matter-what-the-os-path-format
         for PatchedFileObj in modified_files:
             print('Source Path: ', PatchedFileObj.source_file)
             print('Target Path: ', PatchedFileObj.target_file)
@@ -171,7 +180,7 @@ for pr in pull_requests:
             parent_file = ntpath.basename(PatchedFileObj.source_file)
             current_file = ntpath.basename(PatchedFileObj.target_file)
 
-            if(parent_file != current_file):
+            if parent_file != current_file:
                 print('***************** WARNING: FILES DO NOT MATCH ***************************\n\n\n\n\n\n\n\n\n\n\n')
                 exit(-99999999)
 
@@ -185,31 +194,92 @@ for pr in pull_requests:
                 print('Added:   ', HunkObj.added)
                 print('Removed: ', HunkObj.removed)
 
-                parent_start = HunkObj.source_start
-                parent_end = parent_start + HunkObj.source_length
-                current_start = HunkObj.target_start
-                current_end = current_start + HunkObj.target_length
-                print('Source Start: ', parent_start, '   Length: ', HunkObj.source_length, '  End: ', parent_end)
-                print('Target Start: ', current_start, '   Length: ', HunkObj.target_length, '  End: ', current_end)
+                parent_hunk_start = HunkObj.source_start
+                parent_hunk_end = parent_hunk_start + HunkObj.source_length
+                current_hunk_start = HunkObj.target_start
+                current_hunk_end = current_hunk_start + HunkObj.target_length
+                print('Source Start: ', parent_hunk_start, '   Length: ', HunkObj.source_length, '  End: ', parent_hunk_end)
+                print('Target Start: ', current_hunk_start, '   Length: ', HunkObj.target_length, '  End: ', current_hunk_end)
 
+                # TODO Maybe add an extra conditional confirming that total number of lines in each hunk are also equal
                 if HunkObj.added == HunkObj.removed:
                     parent_lexer = parent_file_ent.lexer()
                     current_lexer = current_file_ent.lexer()
-                    par_lexemes = parent_lexer.lexeme(parent_start, parent_end)
-                    cur_lexemes = current_lexer.lexeme(current_start, current_end)
+                    # p_lxm = parent_lexer.lexeme(parent_hunk_start, 89)
+                    # c_lxm = current_lexer.lexeme(current_hunk_start, 89)
+                    p_lxm = parent_lexer.first()
+                    c_lxm = current_lexer.first()
 
-                    while par_lexemes.next() is not None or cur_lexemes.next() is not None:
-                        print(par_lexemes.text())
-                        print(cur_lexemes.text())
-                        if par_lexemes.text() != cur_lexemes.text():
-                            print('Found a difference on line: ', par_lexemes.ref().line())
-                            print('Found a difference on line: ', cur_lexemes.ref().line())
-                            print(par_lexemes.text())
-                            print(cur_lexemes.text())
+                    # TODO Ignore whitespace, newlines, punctuation?
+                    while p_lxm.next() is not None and c_lxm.next() is not None:
+                        # print(par_lexemes.token().upper(), ':', par_lexemes.text(), ' = ', cur_lexemes.text(), ':', cur_lexemes.token().upper())
+                        # hw2_utils.understand_lexeme_info(p_lxm)
+                        # if p_lxm.ent():
+                        #     hw2_utils.understand_entity_info(p_lxm.ent())
+                        try:
+                            if p_lxm.text() != c_lxm.text():
+                                print('Found difference: ', p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
+                                print('Found difference on lines: ', p_lxm.ref().line(), ' and ', c_lxm.ref().line())
+                                print()
+                                before_value = p_lxm.text()
+                                after_value = c_lxm.text()
+                                filename = parent_file
+                                scope = 'Unknown'
+                                # TODO figure out occurrences
+                                occurrence = 1
+
+                                """
+                                Confirm that the change is of the same kindname (i.e. Variable, Data Type, etc.), 
+                                otherwise, categorize as 'Uncategorized' and iterate to end of line
+                                """
+                                if p_lxm.ent().kindname() == c_lxm.ent().kindname():
+                                    change_category = p_lxm.ent().kindname()
+
+                                    # Get filename if retrievable
+                                    if p_lxm.ref() and c_lxm.ref() and p_lxm.ref().kindname() == c_lxm.ref().kindname():
+                                        scope = p_lxm.ref().scope().name()
+
+                                else:
+                                    change_category = 'Uncategorized: KindMismatch'
+                                    while p_lxm.next().token() != 'Newline':
+                                        print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
+                                        p_lxm = p_lxm.next()
+
+                                    while c_lxm.next().token() != 'Newline':
+                                        print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
+                                        c_lxm = c_lxm.next()
+
+                                    print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
+
+                                new_change_data = [[change_category, before_value, after_value, filename, scope, occurrence]]
+                                db_changes = hw2_utils.add_to_db(db_changes, new_change_data)
+
+                        except Exception as err:
+                            print('Exception: ', err)
+
                             # TODO Check to see if the mismatch lexemes' references are the same in the dependency graph
+                            # TODO Check lexemes for the rest of that line before storing change
 
-                        par_lexemes = par_lexemes.next()
-                        cur_lexemes = cur_lexemes.next()
+                        # Iterate to next lexeme
+                        p_lxm = p_lxm.next()
+                        c_lxm = c_lxm.next()
 
-
+                    print(db_changes)
+                    parent_db.close()
+                    current_db.close()
                     exit(-111)
+
+'''
+Things to Consider
+- IF STATEMENTS??
+- Push lines of code in db with change for easy comparison
+- Concatenate a whole line and look for token newline
+- Use string contains to see whether a lexeme is in the string
+- Consider a string diff tool to see how different they are
+
+- Jump straight - to line numbers that indicate change
+- Identify categories from the start using token or kind
+- See which lexemes have kinds and references and handle exceptions
+
+- Compare lines added to removed, some to 0 is deletion or addition
+'''

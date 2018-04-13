@@ -11,17 +11,33 @@ from xml.dom import minidom
 
 
 # Understand Helper Functions
+
+db_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence']
+
+
+def understand_lexeme_info(lexeme):
+    print("----------LEXEME INFO START-----------")
+    print("Lexeme Text: ", lexeme.text())
+    print("Token: ", lexeme.token())
+    print("Entity: ", lexeme.ent())
+    print("Column Begin:End: ", lexeme.column_begin(), ':', lexeme.column_end())
+    print("Line Begin:End: ", lexeme.line_begin(), ':', lexeme.line_end())
+    print("Reference: ", lexeme.ref())
+    print("---------LEXEME INFO END------------")
+
+
 def understand_entity_info(ent):
-    print("---------------------")
+    print("----------ENTITY INFO START-----------")
     print("Entity Name: ", ent.name())
-    print("Annotations: ", str(ent.annotations()))
-    print("Comments: ", str(ent.comments()))
+    # print("Annotations: ", str(ent.annotations()))
+    # print("Comments: ", str(ent.comments()))
     print("Contents: ", ent.contents())
-    print("Depends: ", ent.depends())
-    print("Depends By: ", ent.dependsby())
-    print("Entities: ", str(ent.ents("")))
-    print("Filerefs: ", str(ent.filerefs()))
-    print("ID: ", str(ent.id()))
+    # print("Lexer: ", ent.lexer())
+    # print("Depends: ", ent.depends())
+    # print("Depends By: ", ent.dependsby())
+    # print("Entities: ", str(ent.ents("")))
+    # print("Filerefs: ", str(ent.filerefs()))
+    # print("ID: ", str(ent.id()))
     print("Kind: ", ent.kind())
     print("Kindname: ", ent.kindname())
     print("Language: " + ent.language())
@@ -29,7 +45,7 @@ def understand_entity_info(ent):
     print("Longname: " + ent.longname())
     print("Metrics: ", str(ent.metrics()))
     print("Metric: ", ent.metric(ent.metrics()))
-    print("Name: ", ent.name())
+    # print("Name: ", ent.name())
     print("Parameters: ", ent.parameters())
     print("Parent: ", ent.parent())
     print("Ref: ", ent.ref())
@@ -37,7 +53,9 @@ def understand_entity_info(ent):
     print("Type: ", ent.type())
     print("Uniquename: ", ent.uniquename())
     print("Value: ", ent.value())
-    print("---------------------")
+    print("Info Browser: ", ent.ib())
+
+    print("---------ENTITY INFO END------------")
 
 
 def print_entities(db):
@@ -85,21 +103,6 @@ def execute_command(command, dir=None):
     print('RETURN CODE: ', p.returncode)
 
 
-# Patch File Helper Functions
-def patch_info(url):
-    diff = urllib.request.urlopen(url)
-    # Assume encoding is utf-8
-    patch = PatchSet(diff, encoding='utf-8')
-    print("Additions: " + str(patch.added))
-    print("Deletions: " + str(patch.removed))
-    added_files = patch.added_files
-    modified_files = patch.modified_files
-    removed_files = patch.deleted_files
-    print("Added Files: " + str(added_files))
-    print("Modified Files: " + str(modified_files))
-    print("Removed Files: " + str(removed_files))
-
-
 # Stores files in file struct, 0: added, 1: modified, 2: deleted
 def patch_files(url):
     files = []
@@ -113,21 +116,19 @@ def patch_files(url):
 
     return files
 
-def patch_file_paths(file_lists):
-    file_paths = []
-    for file_list in file_lists:
-        for file in file_list:
-            file_paths.append(file.path)
 
-    return file_paths
-
-def create_pandas_db():
-
-    df = pd.DataFrame({'Method': 'm1',
-                       'ChangeType': pd.Categorical(["parameter", "if_statement", "return_type", "return_value"]),
-                       'ChangeValue': pd.Series(1, index=list(range(4)), dtype='int32'),
-                       'F': ['foo', 'bar', 'fizz', 'buzz']})
+def create_changes_db():
+    test_data = [['TEST DATA', 'int', 'float', 'file.java', 'main', 2]]
+    df = pd.DataFrame(test_data, columns=db_headers)
     print(df)
+    return df
+
+
+def add_to_db(df, new_row):
+    new_df = pd.DataFrame(new_row, columns=db_headers)
+    df = df.append(new_df, ignore_index=True)
+    # print(df)
+    return df
 
 '''
 output of create_xml_output(): 
@@ -194,14 +195,7 @@ def create_xml_output():
 
 # Check if script is running as main
 if __name__=="__main__":
-    # db_name = 'old.udb'
-    # dir_to_analyze = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/old_db'
-    # create_und_db(db_name, dir_to_analyze)
 
-    file_lists = []
-    url = 'https://github.com/guillermokrh/simple-java-changes/commit/ca33cf8c7f89766cae41a5100bad711043f37b44.patch'
-    file_lists = patch_files(url)
-    file_paths = patch_file_paths(file_lists)
-
-    print(file_lists)
-    print(file_paths)
+    db = create_changes_db()
+    new_changes = [['test', 'test', 'test', 'test', 'test', 9]]
+    db = add_to_db(db, new_changes)
