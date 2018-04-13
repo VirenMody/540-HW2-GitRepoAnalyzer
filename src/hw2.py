@@ -1,12 +1,9 @@
-# from src import hw2_utils
+from src import hw2_utils
 
 from git import Repo
 from github3 import GitHub
-# import git
-# import github3
-import hw2_utils
+# import hw2_utils
 import understand
-from unidiff import PatchSet
 import ntpath
 
 
@@ -91,7 +88,6 @@ def understand_dict_parsing():
     print("---Squash entry entities-------")
     hw2_utils.print_entities(parent_db_dict['SquashEntry.message-Variable-squash.SquashEntry'])
 
-
 # TODO Make list of libraries/packages installed, specifications, etc.
 # - github3.py
 # - GitPython
@@ -121,12 +117,14 @@ git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 repo_owner = 'SquareSquash'
 repo_name = 'java'
 git_url = 'https://github.com/' + repo_owner + '/' + repo_name + '.git'
-repo_dir = G_LOCAL_CLONED_REPO_PATH + repo_owner + repo_name
+parent_repo_dir = LOCAL_CLONED_REPO_PATH + repo_owner + repo_name + 'parent'
+current_repo_dir = LOCAL_CLONED_REPO_PATH + repo_owner + repo_name + 'current'
 
 # Clone the repository
-# cloned_repo = Repo.clone_from(git_url, repo_dir)
-# assert cloned_repo.__class__ is Repo  # clone an existing repository
-# print('Cloned ' + repo_owner + '/' +repo_name + ' to repo directory: ' + repo_dir)
+# parent_cloned_repo = Repo.clone_from(git_url, parent_repo_dir)
+# print('Cloned ' + repo_owner + '/' +repo_name + ' to repo directory: ' + parent_repo_dir)
+# current_cloned_repo = Repo.clone_from(git_url, current_repo_dir)
+# print('Cloned ' + repo_owner + '/' +repo_name + ' to repo directory: ' + current_repo_dir)
 
 # Retrieve repository object
 test_repo = git_hub.repository(repo_owner, repo_name)
@@ -146,12 +144,12 @@ for pr in pull_requests:
         pr_parent_hash = commits[0].parents[0]['sha']
 
         # Checkout pull-request's parent commit and create Understand DB on it
-        hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], repo_dir)
-        hw2_utils.create_und_db('pr_parent_commit.udb', repo_dir)
+        hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], parent_repo_dir)
+        hw2_utils.create_und_db('pr_parent_commit.udb', parent_repo_dir)
 
         # Checkout pull-request's commit and create Understand DB on it
-        hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], repo_dir)
-        hw2_utils.create_und_db('pr_current_commit.udb', repo_dir)
+        hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], current_repo_dir)
+        hw2_utils.create_und_db('pr_current_commit.udb', current_repo_dir)
 
         # Open Database
         print(DB_PATH + 'pr_parent_commit.udb')
@@ -197,28 +195,21 @@ for pr in pull_requests:
                 if HunkObj.added == HunkObj.removed:
                     parent_lexer = parent_file_ent.lexer()
                     current_lexer = current_file_ent.lexer()
-                    print(parent_lexer.first().text())
-                    print(current_lexer.first().text())
-                    print(parent_lexer.first().token())
-                    print(current_lexer.first().token())
-                    print(parent_lexer.lines())
-                    print(current_lexer.lines())
                     par_lexemes = parent_lexer.lexeme(parent_start, parent_end)
                     cur_lexemes = current_lexer.lexeme(current_start, current_end)
-                    print(par_lexemes.text())
-                    print(cur_lexemes.text())
 
-                    # for par_ent, curr_ent in zip(parent_file_ent, current_file_ent):
-                    for par_lxm, curr_lxm in zip(parent_lexer, current_lexer):
-                        print(par_lxm.text(), end="")
-                        if par_lxm.ent():
-                            print("@", end="")
+                    while par_lexemes.next() is not None or cur_lexemes.next() is not None:
+                        print(par_lexemes.text())
+                        print(cur_lexemes.text())
+                        if par_lexemes.text() != cur_lexemes.text():
+                            print('Found a difference on line: ', par_lexemes.ref().line())
+                            print('Found a difference on line: ', cur_lexemes.ref().line())
+                            print(par_lexemes.text())
+                            print(cur_lexemes.text())
+                            # TODO Check to see if the mismatch lexemes' references are the same in the dependency graph
+
+                        par_lexemes = par_lexemes.next()
+                        cur_lexemes = cur_lexemes.next()
 
 
-                    # Retrieve a list of all entities
-                    # - '~unresolved' entities are declared in Understand, but not defined
-                    # - '~volatile' TODO What is volatile
-                    # TODO limit which entities are retrieved based on patch files
-                    # TODO find list of kind search parameters
-                    # parent_ents = parent_db.ents('file ~unresolved ~volatile')
-                    # current_ents = current_db.ents('file ~unresolved ~volatile')
+                    exit(-111)
