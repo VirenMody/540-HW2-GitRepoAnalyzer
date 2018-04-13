@@ -9,11 +9,11 @@ import github3
 import hw2_utils
 import understand
 
-
-def create_und_db_from_pull_request(result, path_to_local_clones):
+# Creates understand databases from commits in passed pull_request
+def create_und_db_from_pull_request(pull_request, path_to_local_clones):
 
     # Pull out information of first pull request
-    (owner, repo_name, issue_num, pr_obj) = result
+    (owner, repo_name, issue_num, pr_obj) = pull_request
 
     # Clone repository locally to selected path
     # Return full path of directory as a String
