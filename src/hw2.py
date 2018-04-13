@@ -212,15 +212,17 @@ for pr in pull_requests:
 
                     # TODO Ignore whitespace, newlines, punctuation?
                     while p_lxm.next() is not None and c_lxm.next() is not None:
-                        # print(par_lexemes.token().upper(), ':', par_lexemes.text(), ' = ', cur_lexemes.text(), ':', cur_lexemes.token().upper())
+                        print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
                         # hw2_utils.understand_lexeme_info(p_lxm)
                         # if p_lxm.ent():
                         #     hw2_utils.understand_entity_info(p_lxm.ent())
                         try:
                             if p_lxm.text() != c_lxm.text():
                                 print('Found difference: ', p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
-                                print('Found difference on lines: ', p_lxm.ref().line(), ' and ', c_lxm.ref().line())
-                                print()
+                                if p_lxm.ref():
+                                    print('Parent line: ', p_lxm.ref().line())
+                                if c_lxm.ref():
+                                    print('Current Line: ', c_lxm.ref().line())
                                 before_value = p_lxm.text()
                                 after_value = c_lxm.text()
                                 filename = parent_file
@@ -232,12 +234,13 @@ for pr in pull_requests:
                                 Confirm that the change is of the same kindname (i.e. Variable, Data Type, etc.), 
                                 otherwise, categorize as 'Uncategorized' and iterate to end of line
                                 """
-                                if p_lxm.ent().kindname() == c_lxm.ent().kindname():
-                                    change_category = p_lxm.ent().kindname()
+                                if p_lxm.ent() and c_lxm.ent():
+                                    if p_lxm.ent().kindname() == c_lxm.ent().kindname():
+                                        change_category = p_lxm.ent().kindname()
 
-                                    # Get filename if retrievable
-                                    if p_lxm.ref() and c_lxm.ref() and p_lxm.ref().kindname() == c_lxm.ref().kindname():
-                                        scope = p_lxm.ref().scope().name()
+                                        # Get filename if retrievable
+                                        if p_lxm.ref() and c_lxm.ref() and p_lxm.ref().kindname() == c_lxm.ref().kindname():
+                                            scope = p_lxm.ref().scope().name()
 
                                 else:
                                     change_category = 'Uncategorized: KindMismatch'
@@ -250,12 +253,14 @@ for pr in pull_requests:
                                         c_lxm = c_lxm.next()
 
                                     print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
+                                    print('NEXT', p_lxm.next().token().upper(), ':', p_lxm.next().text(), ' = ', c_lxm.next().text(), ':', c_lxm.next().token().upper())
 
                                 new_change_data = [[change_category, before_value, after_value, filename, scope, occurrence]]
                                 db_changes = hw2_utils.add_to_db(db_changes, new_change_data)
 
                         except Exception as err:
                             print('Exception: ', err)
+                            print(err.with_traceback())
 
                             # TODO Check to see if the mismatch lexemes' references are the same in the dependency graph
                             # TODO Check lexemes for the rest of that line before storing change
