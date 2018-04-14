@@ -1,20 +1,12 @@
 import urllib.request
 from unidiff import PatchSet
 import subprocess
-import os
 import pandas as pd
-import numpy as np
-from xml.etree.ElementTree import Element, SubElement, Comment, tostring
-from xml.dom import minidom
-
-# Test Java Repository: guillermokrh/simple-java-changes
-
-
-# Understand Helper Functions
 
 df_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence', 'prTitle']
 
 
+# Understand Helper Functions
 def understand_lexeme_info(lexeme):
     print("----------LEXEME INFO START-----------")
     print("Lexeme Text: ", lexeme.text())
@@ -72,134 +64,73 @@ def is_entity_match(ent1, ent2):
         return False
 
 
-# TODO Update parameters
 def create_und_db(db_name, dir_to_analyze):
     """
-    Function to create Understand database repo
-    :param db_name: repo database name
-    :param dir_to_analyze: repo to be analyzed
-    :return: return code from execute_command
+    Function to create Understand database for repo for commit [hash]
+    :param db_name: [repo database name].udb
+    :param dir_to_analyze: path to repo to be analyzed
+    :return: return code returned from execute_command function call
     """
     und_cmd = ['und', '-db', db_name, 'create', '-languages', 'java', 'add', dir_to_analyze, 'analyze']
     g_und_cmd = 'und -db ' + db_name + ' create -languages java add ' + dir_to_analyze + ' analyze'
     return execute_command(g_und_cmd)
 
 
-# TODO remove extra print line stuff
-# TODO Remove console logging+
+# TODO Remove console logging
 def execute_command(command, dir=None):
     """
-    Function executes given command on CLI
+    Function executes given command on CLI (i.e. create udb files, checkout specific commits, etc.)
     :param command: to be executed on CLI
     :param dir: path to directory
     :return: return code from subprocess call
     """
 
     if dir is None:
-        p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+        p = subprocess.Popen(command, shell=True)
     else:
-        p = subprocess.Popen(command, shell=True, cwd=dir, stdout=subprocess.PIPE)
-
-    for line in p.stdout:
-        print('LINE: ', line)
+        p = subprocess.Popen(command, shell=True, cwd=dir)
     p.wait()
-    print('RETURN CODE: ', p.returncode)
 
-    # Return Code: 128: 'fatal: reference is not a tree: [commit]'
+    # Return Code: 0 (no error), 128 (possible: 'fatal: reference is not a tree: [commit]')
     return p.returncode
 
-# Stores files in file struct, 0: added, 1: modified, 2: deleted
-def patch_files(url):
-    files = []
+
+def get_files_from_patch(url):
+    """
+    Function parses patch file/url for affected files and returns a dictionary of files
+    :param url: patch URL from pull request
+    :return: files: dictionary of added, modified, and deleted files
+    """
     diff = urllib.request.urlopen(url)
     # Assume encoding is utf-8
     patch = PatchSet(diff, encoding='utf-8')
 
-    files.append(patch.added_files)
-    files.append(patch.modified_files)
-    files.append(patch.removed_files)
+    files = {'added_files': patch.added_files, 'modified_files': patch.modified_files, 'removed_files': patch.removed_files}
 
     return files
 
 
 def create_df():
-    df = pd.DataFrame(columns=df_headers)
-    print(df)
-    return df
+    """
+    Function creates Python Pandas DataFrame used to store changes found in pull requests
+    :return: data_frame: DataFrame
+    """
+    data_frame = pd.DataFrame(columns=df_headers)
+    return data_frame
 
 
 def add_row_to_df(df, new_row):
+    """
+    Function inserts each new change found when analyzing commits into DataFrame
+    :param df: old Python Pandas DataFrame of change
+    :param new_row: list of new change categorized
+    :return: df: updated
+    """
     new_df = pd.DataFrame(new_row, columns=df_headers)
     df = df.append(new_df, ignore_index=True)
-    # print(df)
     return df
-
-'''
-output of create_xml_output(): 
-<output>
-    <method>m1
-        <frequency> 20 </frequency>
-        <file> f.java </file>
-        <change>
-            <parameter> salary
-                <oldtype>int</oldtype>
-                <newtype>double</newtype>
-            </parameter>
-        </change>
-        <change>
-            <ifstatement> salary
-                <addcondition>if salary \gt 0 return true<addcondition>
-            </ifstatement>
-        </change>
-    </method>
-</output>
-'''
-# method: 'm1',
-# frequency: '20',
-# file: 'f.java',
-### first tuple is tag name, text, remaining tuples are the children for that change
-# change list: [
-#                  [('parameter', 'salary'), ('oldtype','int'), ('newtype','int')],
-#                  [('ifstatement', 'salary'), ('addcondition', 'if salary \gt 0 return true')]
-#              ]
-def create_xml_output():
-    output = Element('output')
-    title = Comment('Output of Changes for CS540 HMW2')
-
-    output.append(title)
-    method = SubElement(output, 'method')
-    method.text = 'ml'
-
-    frequency = SubElement(method, 'frequency')
-    frequency.text = '20'
-    
-    file = SubElement(method, 'file')
-    file.text = 'f.java'
-
-    # First Change
-    change = SubElement(method, 'change')
-
-    parameter = SubElement(change, 'parameter')
-    parameter.text = 'salary'
-
-    old_type = SubElement(parameter, 'oldtype')
-    old_type.text = 'int'
-    new_type = SubElement(parameter, 'newtype')
-    new_type.text = 'double'
-
-    # Second change
-    change2 = SubElement(method, 'change')
-    ifstatement = SubElement(change2, 'ifstatement')
-    ifstatement.text = 'salary'
-    addcondition = SubElement(ifstatement, 'addcondition')
-    addcondition.text = 'if salary \gt 0 return true'
-
-    print(tostring(output))
 
 
 # Check if script is running as main
-if __name__=="__main__":
-
+if __name__ == "__main__":
     df = create_df()
-    new_changes = [['test', 'test', 'test', 'test', 'test', 9]]
-    df = add_row_to_df(df, new_changes)
