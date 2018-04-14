@@ -23,13 +23,19 @@ def create_und_db_from_pull_request(pull_request, path_to_local_clones):
     (pr_commit_hash, pr_parent_hash) = select_last_commit(pr_obj)
 
     # Checkout pull-request's parent commit and create Understand DB on it
-    error_code = hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], parent_dir)
+    git_command = "git checkout " + pr_parent_hash
+    error_code = hw2_utils.execute_command(git_command, parent_dir)
+    # error_code = hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], parent_dir)
+
     if error_code != 0:
         raise Exception
     hw2_utils.create_und_db('pr_parent_commit.udb', parent_dir)
 
     # Checkout pull-request's commit and create Understand DB on it
-    error_code = hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], commit_dir)
+    git_command = "git checkout " + pr_commit_hash
+    error_code = hw2_utils.execute_command(git_command, commit_dir)
+    # error_code = hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], commit_dir)
+
     if error_code != 0:
         raise Exception
     hw2_utils.create_und_db('pr_current_commit.udb', commit_dir)
@@ -119,7 +125,7 @@ def search_by_issues(git_hub, my_query, num):
         repo_obj = git_hub.repository(username, repo_name)
         pr_obj = git_hub.pull_request(username, repo_name, issue_number)
 
-        if (repo_obj.size < 50000) and (pr_obj.merged is True):
+        if (repo_obj.size < 30000) and (pr_obj.merged is True):
             results.append((username, repo_name, issue_number, pr_obj))
         # TODO Remove if not necessary
         # else:
@@ -291,12 +297,14 @@ GITHUB_ACCESS_TOKEN = 'a74c9704e00d767da4fe1d34aaf0ed8603d8ea11'
 OUTPUT_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/'
 # OUTPUT_PATH = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/analysis.csv'
 LOCAL_CLONED_REPO_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/ClonedRepos/'
+G_LOCAL_CLONED_REPO_PATH = '/home/guillermo/cs540/cloned_repos/'
+#Todo
+LOCAL_CLONED_REPO_PATH = G_LOCAL_CLONED_REPO_PATH
+
 DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/src/'
 G_DB_PATH = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/'
-
-G_ORIG_DB_PATH = '/home/guillermo/cs540/java_project.udb'
-G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
-G_LOCAL_CLONED_REPO_PATH = '/home/guillermo/cs540/cloned_repos/'
+#Todo
+DB_PATH = G_DB_PATH
 
 '''
 #To use understand dictionary parsing 
@@ -315,7 +323,8 @@ git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 # TODO update the number of pull requests to retrieve
 # Create Query and Search Pull Requests
 query = "language:java is:pr label:bug is:closed"
-pull_requests = 2
+
+pull_requests = 10
 
 # Gets list of merged pull requests from repositories smaller than 50MB
 pr_results = search_by_issues(git_hub, query, pull_requests)
