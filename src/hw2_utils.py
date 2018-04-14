@@ -72,8 +72,8 @@ def create_und_db(db_name, dir_to_analyze):
     :return: return code returned from execute_command function call
     """
     und_cmd = ['und', '-db', db_name, 'create', '-languages', 'java', 'add', dir_to_analyze, 'analyze']
-    g_und_cmd = 'und -db ' + db_name + ' create -languages java add ' + dir_to_analyze + ' analyze'
-    return execute_command(g_und_cmd)
+    # g_und_cmd = 'und -db ' + db_name + ' create -languages java add ' + dir_to_analyze + ' analyze'
+    return execute_command(und_cmd)
 
 
 # TODO Remove console logging
