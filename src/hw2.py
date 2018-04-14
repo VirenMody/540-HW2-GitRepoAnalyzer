@@ -1,13 +1,13 @@
-#from src import hw2_utils
-from git import Repo
+from git import Repo, exc
 from github3 import GitHub
 from github3 import search_issues
 import github3
-# import hw2_utils
+import hw2_utils
 import understand
 import ntpath
 
 
+#TODO Catch exception/error from invalid commits
 # Creates understand databases from commits in passed pull_request
 def create_und_db_from_pull_request(pull_request, path_to_local_clones):
 
@@ -16,26 +16,32 @@ def create_und_db_from_pull_request(pull_request, path_to_local_clones):
 
     # Clone repository locally to selected path
     # Return full path of directory as a String
-    commit_dir = clone_repo(owner, repo_name, path_to_local_clones)
-    parent_dir = clone_repo(owner, repo_name, path_to_local_clones)
+    commit_dir = clone_repo(owner, repo_name, path_to_local_clones, issue_num + 'current')
+    parent_dir = clone_repo(owner, repo_name, path_to_local_clones, issue_num + 'parent')
 
     # Get the last commit in the list of commits (it is the most recent)
     (pr_commit_hash, pr_parent_hash) = select_last_commit(pr_obj)
 
     # Checkout pull-request's parent commit and create Understand DB on it
-    hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], parent_dir)
+    error_code = hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], parent_dir)
+    if error_code != 0:
+        raise Exception
     hw2_utils.create_und_db('pr_parent_commit.udb', parent_dir)
 
     # Checkout pull-request's commit and create Understand DB on it
-    hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], commit_dir)
+    error_code = hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], commit_dir)
+    if error_code != 0:
+        raise Exception
     hw2_utils.create_und_db('pr_current_commit.udb', commit_dir)
 
-    return True
+    return parent_dir, commit_dir
 
 
+# TODO Return all commits
 def select_last_commit(pr_obj):
     # Get the last commit in the list of commits (it is the most recent)
     commits = [commit.refresh() for commit in pr_obj.commits(-1, None)]
+    pr_commits = commits[-1]
     pr_commit_hash = commits[-1].sha
     pr_parent_hash = commits[-1].parents[0]['sha']
 
@@ -43,20 +49,28 @@ def select_last_commit(pr_obj):
 
 
 # Return: local directory of the cloned repository
-def clone_repo(owner, name, directory):
+def clone_repo(owner, name, directory, commit_type):
     # TODO Update repository owner and name based on search results
     git_url = 'https://github.com/' + owner + '/' + name + '.git'
-    repo_dir = directory + owner + name
+    repo_dir = directory + owner + name + commit_type
 
-    # Clone the repository
-    print('Cloning ' + owner + '/' + name + ' to repo directory: ' + repo_dir)
+    try:
+        # Clone the repository
+        print('Cloning ' + owner + '/' + name + ' to repo directory: ' + repo_dir)
+        cloned_repo = Repo.clone_from(git_url, repo_dir)
+        assert cloned_repo.__class__ is Repo  # clone an existing repository
 
-    cloned_repo = Repo.clone_from(git_url, repo_dir)
-    assert cloned_repo.__class__ is Repo  # clone an existing repository
+        return repo_dir
+    # TODO Replace with logging
+    except exc.GitError as err:
+        print('***** ERROR CODE: 128 ******\n', err)
+        print('*************************************************************************************************************')
+        print('Cloned repositories still exist from the last run.\nPlease delete Cloned Repository directory.\nThen run again.')
+        print('*************************************************************************************************************\n\n')
+        exit(128)
 
-    return repo_dir
 
-
+# TODO Remove function if unused
 # param: test_repo [Repository object],
 def retrieve_one_closed_pull_request(test_repo):
     # Retrieve all 'CLOSED' pull requests
@@ -91,7 +105,7 @@ def retrieve_one_closed_pull_request(test_repo):
 # param: query
 # param: number - the number of results to return
 # return type: list, of 3 member tuples: [(user, repo name, issue #, pull request object)]
-def search_by_issues(git_hub, my_query,num):
+def search_by_issues(git_hub, my_query, num):
     # TODO Search for Github Java Repositories using issues/pull requests
     issue_search_result = git_hub.search_issues(query=my_query, number=num)
     results = []
@@ -107,8 +121,9 @@ def search_by_issues(git_hub, my_query,num):
 
         if (repo_obj.size < 50000) and (pr_obj.merged is True):
             results.append((username, repo_name, issue_number, pr_obj))
-        else:
-            continue
+        # TODO Remove if not necessary
+        # else:
+        #     continue
 
     return results
 
@@ -267,7 +282,6 @@ def print_dict_parsing_results(match_ls, no_match_ls, not_in_parent_dict_ls, not
 # TODO better commenting
 # TODO exception handling
 
-
 # TODO Update the following to paths where commits are downloaded
 GITHUB_USERNAME = 'virenmody'
 GITHUB_ACCESS_TOKEN = 'a74c9704e00d767da4fe1d34aaf0ed8603d8ea11'
@@ -280,44 +294,6 @@ G_ORIG_DB_PATH = '/home/guillermo/cs540/java_project.udb'
 G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
 G_LOCAL_CLONED_REPO_PATH = '/home/guillermo/cs540/cloned_repos/'
 
-# TODO Modify code to use the functions in the block comment below
-'''
-###### Example of how to use functions to search for pull requests based on query,
-######     select last commit, and create understand databases from pull request
-# Authenticate GitHub object
-git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
-
-# Create Query and Search Pull Requests
-query = "language:java is:pr label:bug is:closed"
-pull_requests = 10
-
-# Gets list of pull requests from repositories smaller than 50MB
-# With pull requests that have been merged
-pr_results = search_by_issues(git_hub, query, pull_requests)
-
-# Finds commits, checks out commits, creates understand database
-create_und_db_from_pull_request(pr_results[0], G_LOCAL_CLONED_REPO_PATH)
-'''
-
-# Create Pandas "database" (DataFrame) to store changes
-db_changes = hw2_utils.create_changes_db()
-
-# Authenticate GitHub object
-git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
-
-# TODO Update repository owner and name based on search results
-repo_owner = 'SquareSquash'
-repo_name = 'java'
-git_url = 'https://github.com/' + repo_owner + '/' + repo_name + '.git'
-parent_repo_dir = G_LOCAL_CLONED_REPO_PATH + repo_owner + repo_name + 'parent'
-current_repo_dir = G_LOCAL_CLONED_REPO_PATH + repo_owner + repo_name + 'current'
-
-# Clone the repository
-parent_cloned_repo = Repo.clone_from(git_url, parent_repo_dir)
-print('Cloned ' + repo_owner + '/' + repo_name + ' to repo directory: ' + parent_repo_dir)
-current_cloned_repo = Repo.clone_from(git_url, current_repo_dir)
-print('Cloned ' + repo_owner + '/' + repo_name + ' to repo directory: ' + current_repo_dir)
-
 '''
 #To use understand dictionary parsing 
 understand_db1 = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/pr_parent_commit.udb'
@@ -326,198 +302,205 @@ understand_db2 = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2
 print_dict_parsing_results(match, no_match, not_in_parent, not_in_commit)
 '''
 
-# Retrieve repository object
-test_repo = git_hub.repository(repo_owner, repo_name)
+# Create Pandas "database" (DataFrame) to store changes
+db_changes = hw2_utils.create_db()
 
-# Retrieve all 'CLOSED' pull requests
-pull_requests = [pr.refresh() for pr in test_repo.pull_requests('closed', None, None, 'created', 'desc', -1, None)]
+# Authenticate GitHub object
+git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 
-# TODO pull correct hash for pull request commit and parent commit
-# Retrieve the commits of all pull requests that have been merged and contain only 1 commit
-commits = []
-pr_commit_hash = ''
-pr_parent_hash = ''
-for pr in pull_requests:
-    if pr.merged:
-        commits = [commit.refresh() for commit in pr.commits(-1, None)]
-        pr_commit_hash = commits[0].sha
-        pr_parent_hash = commits[0].parents[0]['sha']
+# Create Query and Search Pull Requests
+query = "language:java is:pr label:bug is:closed"
+pull_requests = 30
 
+# Gets list of pull requests from repositories smaller than 50MB
+# With pull requests that have been merged
+pr_results = search_by_issues(git_hub, query, pull_requests)
+
+for pr_data in pr_results:
+    # Finds commits, checks out commits, creates understand database
+    try:
+        parent_repo_dir, current_repo_dir = create_und_db_from_pull_request(pr_data, LOCAL_CLONED_REPO_PATH)
+    # TODO Replace print statements with logging
+    except Exception as err:
+        print('***** ERROR ******\n', err)
+        print('*************************************************************************************************************')
+        print('Possible: fatal: reference is not a tree: [commit]')
+        print('Possible Invalid Commit: Skipping pull request, analyzing next')
+        print('*************************************************************************************************************\n\n')
+        continue
+
+    # pr is the Pull Request Object
+    pr = pr_data[3]
+
+    # Open Database
+    print(DB_PATH + 'pr_parent_commit.udb')
+    print(DB_PATH + 'pr_current_commit.udb')
+    parent_db = understand.open(DB_PATH + 'pr_parent_commit.udb')
+    current_db = understand.open(DB_PATH + 'pr_current_commit.udb')
+
+    # TODO Check if any files are added or removed
+    # patch_files[index] Index: 0: added files, 1: modified files, 2: deleted files
+    patch_files = hw2_utils.patch_files(pr.patch_url)
+    modified_files = patch_files[1]
+
+    # TODO Check if ntpath works on non-Windows systems
+    # https://stackoverflow.com/questions/8384737/extract-file-name-from-path-no-matter-what-the-os-path-format
+    for PatchedFileObj in modified_files:
+        print('Source Path: ', PatchedFileObj.source_file)
+        print('Target Path: ', PatchedFileObj.target_file)
+        print('Source Filename: ', ntpath.basename(PatchedFileObj.source_file))
+        print('Target Filename: ', ntpath.basename(PatchedFileObj.target_file))
+        parent_file = ntpath.basename(PatchedFileObj.source_file)
+        current_file = ntpath.basename(PatchedFileObj.target_file)
+
+        # TODO Catch this issue, if not remove it
+        if parent_file != current_file:
+            print('***************** WARNING: FILES DO NOT MATCH ***************************\n\n\n\n\n\n\n\n\n\n\n')
+            exit(-99999999)
+
+        # Retrieve file entity from database
         try:
-            # Checkout pull-request's parent commit and create Understand DB on it
-            hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], parent_repo_dir)
-            hw2_utils.create_und_db('pr_parent_commit.udb', parent_repo_dir)
-
-            # Checkout pull-request's commit and create Understand DB on it
-            hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], current_repo_dir)
-            hw2_utils.create_und_db('pr_current_commit.udb', current_repo_dir)
-        except Exception as err:
-            print('Possible: fatal: reference is not a tree: [commit]')
-            print('Possible Invalid Commit: Skipping this pull request, analyzing next')
-            continue
-
-        # Open Database
-        print(G_DB_PATH + 'pr_parent_commit.udb')
-        print(G_DB_PATH + 'pr_current_commit.udb')
-        parent_db = understand.open(G_DB_PATH + 'pr_parent_commit.udb')
-        current_db = understand.open(G_DB_PATH + 'pr_current_commit.udb')
-
-        # TODO Check if any files are added or removed
-        # patch_files[index] Index: 0: added files, 1: modified files, 2: deleted files
-        patch_files = hw2_utils.patch_files(pr.patch_url)
-        modified_files = patch_files[1]
-
-        # TODO Check if ntpath works on non-Windows systems
-        # https://stackoverflow.com/questions/8384737/extract-file-name-from-path-no-matter-what-the-os-path-format
-        for PatchedFileObj in modified_files:
-            print('Source Path: ', PatchedFileObj.source_file)
-            print('Target Path: ', PatchedFileObj.target_file)
-            print('Source Filename: ', ntpath.basename(PatchedFileObj.source_file))
-            print('Target Filename: ', ntpath.basename(PatchedFileObj.target_file))
-            parent_file = ntpath.basename(PatchedFileObj.source_file)
-            current_file = ntpath.basename(PatchedFileObj.target_file)
-
-            # TODO Catch this issue, if not remove it
-            if parent_file != current_file:
-                print('***************** WARNING: FILES DO NOT MATCH ***************************\n\n\n\n\n\n\n\n\n\n\n')
-                exit(-99999999)
-
-            # Retrieve file entity from database
             parent_file_ent = parent_db.lookup(parent_file, 'file')[0]
             current_file_ent = current_db.lookup(current_file, 'file')[0]
-            print('Parent File Entity: ', parent_file_ent)
-            print('Current File Entity: ', current_file_ent)
+        except IndexError as err:
+            print('***** ERROR ******\n', err)
+            print('*************************************************************************************************************')
+            print('File does not exist. Skipping pull request, analyzing next')
+            print('*************************************************************************************************************\n\n')
+            continue
+        print('Parent File Entity: ', parent_file_ent)
+        print('Current File Entity: ', current_file_ent)
 
-            for HunkObj in PatchedFileObj:
-                print('Added:   ', HunkObj.added)
-                print('Removed: ', HunkObj.removed)
+        for HunkObj in PatchedFileObj:
+            print('Added:   ', HunkObj.added)
+            print('Removed: ', HunkObj.removed)
 
-                parent_hunk_start = HunkObj.source_start
-                parent_hunk_end = parent_hunk_start + HunkObj.source_length
-                current_hunk_start = HunkObj.target_start
-                current_hunk_end = current_hunk_start + HunkObj.target_length
-                print('Source Start: ', parent_hunk_start, '   Length: ', HunkObj.source_length, '  End: ', parent_hunk_end)
-                print('Target Start: ', current_hunk_start, '   Length: ', HunkObj.target_length, '  End: ', current_hunk_end)
+            parent_hunk_start = HunkObj.source_start
+            parent_hunk_end = parent_hunk_start + HunkObj.source_length
+            current_hunk_start = HunkObj.target_start
+            current_hunk_end = current_hunk_start + HunkObj.target_length
+            print('Source Start: ', parent_hunk_start, '   Length: ', HunkObj.source_length, '  End: ', parent_hunk_end)
+            print('Target Start: ', current_hunk_start, '   Length: ', HunkObj.target_length, '  End: ', current_hunk_end)
 
-                # TODO Maybe add an extra conditional confirming that total number of lines in each hunk are also equal
-                if HunkObj.added == HunkObj.removed:
-                    parent_lexer = parent_file_ent.lexer()
-                    current_lexer = current_file_ent.lexer()
-                    # p_lxms = parent_lexer.lexemes(parent_hunk_start, parent_hunk_end)
-                    # c_lxms = current_lexer.lexemes(current_hunk_start, current_hunk_end)
-                    p_lxm = parent_lexer.first()
-                    c_lxm = current_lexer.first()
+            # TODO Maybe add an extra conditional confirming that total number of lines in each hunk are also equal
+            if HunkObj.added == HunkObj.removed:
+                parent_lexer = parent_file_ent.lexer()
+                current_lexer = current_file_ent.lexer()
+                # p_lxms = parent_lexer.lexemes(parent_hunk_start, parent_hunk_end)
+                # c_lxms = current_lexer.lexemes(current_hunk_start, current_hunk_end)
+                p_lxm = parent_lexer.first()
+                c_lxm = current_lexer.first()
 
-                    num_changes_found = 0
-                    # TODO Ignore whitespace, newlines, punctuation?
-                    while p_lxm.next() is not None and c_lxm.next() is not None:
+                num_changes_found = 0
+                # TODO Ignore whitespace, newlines, punctuation?
+                while p_lxm.next() is not None and c_lxm.next() is not None:
 
-                        if num_changes_found == HunkObj.added:
-                            break
+                    if num_changes_found == HunkObj.added:
+                        break
 
-                        # print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
-                        # hw2_utils.understand_lexeme_info(p_lxm)
-                        # if p_lxm.ent():
-                        #     hw2_utils.understand_entity_info(p_lxm.ent())
-                        try:
-                            if p_lxm.text() != c_lxm.text():
-                                print('Found difference: ', p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
-                                if p_lxm.ref():
-                                    print('Parent line: ', p_lxm.ref().line())
-                                if c_lxm.ref():
-                                    print('Current Line: ', c_lxm.ref().line())
+                    # print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
+                    # hw2_utils.understand_lexeme_info(p_lxm)
+                    # if p_lxm.ent():
+                    #     hw2_utils.understand_entity_info(p_lxm.ent())
+                    try:
+                        if p_lxm.text() != c_lxm.text():
+                            print('Found difference: ', p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
+                            if p_lxm.ref():
+                                print('Parent line: ', p_lxm.ref().line())
+                            if c_lxm.ref():
+                                print('Current Line: ', c_lxm.ref().line())
 
-                                change_category = '---'
-                                before_value = p_lxm.text()
-                                after_value = c_lxm.text()
-                                filename = parent_file
-                                scope = 'Unknown'
-                                # TODO figure out occurrences
-                                occurrence = 'TBD'
+                            change_category = '---'
+                            before_value = p_lxm.text()
+                            after_value = c_lxm.text()
+                            filename = parent_file
+                            scope = 'Unknown'
+                            # TODO figure out occurrences
+                            occurrence = 'TBD'
 
-                                #Confirm that the change is of the same kindname (i.e. Variable, Data Type, etc.), 
-                                #otherwise, categorize as 'Uncategorized' and iterate to end of line
-                                
-                                if p_lxm.ent() and c_lxm.ent():
-                                    if p_lxm.ent().kindname() != c_lxm.ent().kindname():
-                                        print(p_lxm.text(), '--', p_lxm.ent().kind(), p_lxm.ent().kindname(), '::', c_lxm.ent().kind(), c_lxm.ent().kindname(), '--', c_lxm.text())
-                                        if "Class" in p_lxm.ent().kindname() and "Class" in c_lxm.ent().kindname():
-                                            change_category = 'Class'
-                                    if p_lxm.ent().kindname() == c_lxm.ent().kindname():
-                                        change_category = p_lxm.ent().kindname()
+                            # Confirm that the change is of the same kindname (i.e. Variable, Data Type, etc.),
+                            # otherwise, categorize as 'Uncategorized' and iterate to end of line
 
-                                        # Get filename if retrievable
-                                        if p_lxm.ref() and c_lxm.ref() and p_lxm.ref().kindname() == c_lxm.ref().kindname():
-                                            scope = p_lxm.ref().scope().name()
+                            if p_lxm.ent() and c_lxm.ent():
+                                if p_lxm.ent().kindname() != c_lxm.ent().kindname():
+                                    print(p_lxm.text(), '--', p_lxm.ent().kind(), p_lxm.ent().kindname(), '::', c_lxm.ent().kind(), c_lxm.ent().kindname(), '--', c_lxm.text())
+                                    if "Class" in p_lxm.ent().kindname() and "Class" in c_lxm.ent().kindname():
+                                        change_category = 'Class'
+                                if p_lxm.ent().kindname() == c_lxm.ent().kindname():
+                                    change_category = p_lxm.ent().kindname()
 
-                                else:
-                                    # change_category = 'Uncategorized: KindMismatch'
-                                    while p_lxm.next().token() != 'Newline':
-                                        # print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
-                                        p_lxm = p_lxm.next()
+                                    # Get filename if retrievable
+                                    if p_lxm.ref() and c_lxm.ref() and p_lxm.ref().kindname() == c_lxm.ref().kindname():
+                                        scope = p_lxm.ref().scope().name()
 
-                                    while c_lxm.next().token() != 'Newline':
-                                        # print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
-                                        c_lxm = c_lxm.next()
-
+                            else:
+                                # change_category = 'Uncategorized: KindMismatch'
+                                while p_lxm.next().token() != 'Newline':
                                     # print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
-                                    # print('NEXT', p_lxm.next().token().upper(), ':', p_lxm.next().text(), ' = ', c_lxm.next().text(), ':', c_lxm.next().token().upper())
+                                    p_lxm = p_lxm.next()
 
-                                    # Iterate to next lexeme
-                                    # p_lxm = p_lxm.next()
-                                    # c_lxm = c_lxm.next()
-                                    break
+                                while c_lxm.next().token() != 'Newline':
+                                    # print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
+                                    c_lxm = c_lxm.next()
 
-                                new_change_data = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
-                                db_changes = hw2_utils.add_to_db(db_changes, new_change_data)
-                                num_changes_found += 1
+                                # print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
+                                # print('NEXT', p_lxm.next().token().upper(), ':', p_lxm.next().text(), ' = ', c_lxm.next().text(), ':', c_lxm.next().token().upper())
 
-                        except Exception as err:
-                            print('Exception: ', err)
-                            print(err.with_traceback())
+                                # Iterate to next lexeme
+                                # p_lxm = p_lxm.next()
+                                # c_lxm = c_lxm.next()
+                                break
 
-                            # TODO Check to see if the mismatch lexemes' references are the same in the dependency graph
-                            # TODO Check lexemes for the rest of that line before storing change
+                            new_change_data = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
+                            db_changes = hw2_utils.add_row_to_db(db_changes, new_change_data)
+                            num_changes_found += 1
 
-                        # Iterate to next lexeme
-                        p_lxm = p_lxm.next()
-                        c_lxm = c_lxm.next()
+                    except Exception as err:
+                        print('Exception: ', err)
+                        print(err.with_traceback())
 
-                    print(db_changes)
+                        # TODO Check to see if the mismatch lexemes' references are the same in the dependency graph
+                        # TODO Check lexemes for the rest of that line before storing change
 
-                elif HunkObj.added == 0 or HunkObj.removed == 0:
+                    # Iterate to next lexeme
+                    p_lxm = p_lxm.next()
+                    c_lxm = c_lxm.next()
 
-                    change_category = ''
-                    if HunkObj.added == 0:
-                        change_category = 'Only Deletions'
-                    if HunkObj.removed == 0:
-                        change_category = 'Only Insertions'
-                    before_value = 'N/A'
-                    after_value = 'N/A'
-                    filename = parent_file
-                    scope = 'Unknown'
-                    # TODO figure out occurrences
-                    occurrence = 'TBD'
+                print(db_changes)
 
-                    new_change_data = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
-                    db_changes = hw2_utils.add_to_db(db_changes, new_change_data)
-                    print(db_changes)
+            elif HunkObj.added == 0 or HunkObj.removed == 0:
 
-                else:
-                    change_category = 'Uncategorized'
-                    before_value = 'N/A'
-                    after_value = 'N/A'
-                    filename = parent_file
-                    scope = 'Unknown'
-                    # TODO figure out occurrences
-                    occurrence = 'TBD'
+                change_category = ''
+                if HunkObj.added == 0:
+                    change_category = 'Only Deletions'
+                if HunkObj.removed == 0:
+                    change_category = 'Only Insertions'
+                before_value = 'N/A'
+                after_value = 'N/A'
+                filename = parent_file
+                scope = 'Unknown'
+                # TODO figure out occurrences
+                occurrence = 'TBD'
 
-                    new_change_data = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
-                    db_changes = hw2_utils.add_to_db(db_changes, new_change_data)
-                    print(db_changes)
+                new_change_data = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
+                db_changes = hw2_utils.add_row_to_db(db_changes, new_change_data)
+                print(db_changes)
 
-        parent_db.close()
-        current_db.close()
+            else:
+                change_category = 'Uncategorized'
+                before_value = 'N/A'
+                after_value = 'N/A'
+                filename = parent_file
+                scope = 'Unknown'
+                # TODO figure out occurrences
+                occurrence = 'TBD'
+
+                new_change_data = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
+                db_changes = hw2_utils.add_row_to_db(db_changes, new_change_data)
+                print(db_changes)
+
+    parent_db.close()
+    current_db.close()
 
 '''
 Things to Consider

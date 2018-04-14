@@ -75,23 +75,25 @@ def is_entity_match(ent1, ent2):
 # TODO Update parameters
 def create_und_db(db_name, dir_to_analyze):
     """
-    Function to create Understand database for given repo
+    Function to create Understand database repo
     :param db_name: repo database name
     :param dir_to_analyze: repo to be analyzed
-    :return:
+    :return: return code from execute_command
     """
     und_cmd = ['und', '-db', db_name, 'create', '-languages', 'java', 'add', dir_to_analyze, 'analyze']
-    execute_command(und_cmd)
+    return execute_command(und_cmd)
 
 
 # TODO remove extra print line stuff
+# TODO Remove console logging+
 def execute_command(command, dir=None):
     """
     Function executes given command on CLI
     :param command: to be executed on CLI
     :param dir: path to directory
-    :return:
+    :return: return code from subprocess call
     """
+
     if dir is None:
         p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     else:
@@ -102,11 +104,8 @@ def execute_command(command, dir=None):
     p.wait()
     print('RETURN CODE: ', p.returncode)
 
-    # Throw exception to "git checkout [commit]" caller
-    # - fatal: reference is not a tree: [commit]
-    if p.returncode == 128:
-        raise Exception
-
+    # Return Code: 128: 'fatal: reference is not a tree: [commit]'
+    return p.returncode
 
 # Stores files in file struct, 0: added, 1: modified, 2: deleted
 def patch_files(url):
@@ -122,14 +121,15 @@ def patch_files(url):
     return files
 
 
-def create_changes_db():
-    test_data = [['ChangeCategory', 'Before', 'After', 'Filename', 'Scope', 'Occur', 'PRTitle']]
+def create_db():
+    # test_data = [['ChangeCategory', 'Before', 'After', 'Filename', 'Scope', 'Occur', 'PRTitle']]
+    test_data = [[]]
     df = pd.DataFrame(test_data, columns=db_headers)
     print(df)
     return df
 
 
-def add_to_db(df, new_row):
+def add_row_to_db(df, new_row):
     new_df = pd.DataFrame(new_row, columns=db_headers)
     df = df.append(new_df, ignore_index=True)
     # print(df)
@@ -201,6 +201,6 @@ def create_xml_output():
 # Check if script is running as main
 if __name__=="__main__":
 
-    db = create_changes_db()
+    db = create_db()
     new_changes = [['test', 'test', 'test', 'test', 'test', 9]]
-    db = add_to_db(db, new_changes)
+    db = add_row_to_db(db, new_changes)
