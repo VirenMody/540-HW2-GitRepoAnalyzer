@@ -1,4 +1,4 @@
-from src import hw2_utils
+#from src import hw2_utils
 from git import Repo
 from github3 import GitHub
 from github3 import search_issues
@@ -275,7 +275,7 @@ GITHUB_ACCESS_TOKEN = 'a74c9704e00d767da4fe1d34aaf0ed8603d8ea11'
 
 LOCAL_CLONED_REPO_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/ClonedRepos/'
 DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/src/'
-G_DB_PATH = '/home/guillermo/cs540/java_project.udb'
+G_DB_PATH = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/'
 
 G_ORIG_DB_PATH = '/home/guillermo/cs540/java_project.udb'
 G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
@@ -312,14 +312,14 @@ git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 repo_owner = 'SquareSquash'
 repo_name = 'java'
 git_url = 'https://github.com/' + repo_owner + '/' + repo_name + '.git'
-parent_repo_dir = LOCAL_CLONED_REPO_PATH + repo_owner + repo_name + 'parent'
-current_repo_dir = LOCAL_CLONED_REPO_PATH + repo_owner + repo_name + 'current'
+parent_repo_dir = G_LOCAL_CLONED_REPO_PATH + repo_owner + repo_name + 'parent'
+current_repo_dir = G_LOCAL_CLONED_REPO_PATH + repo_owner + repo_name + 'current'
 
 # Clone the repository
-# parent_cloned_repo = Repo.clone_from(git_url, parent_repo_dir)
-# print('Cloned ' + repo_owner + '/' + repo_name + ' to repo directory: ' + parent_repo_dir)
-# current_cloned_repo = Repo.clone_from(git_url, current_repo_dir)
-# print('Cloned ' + repo_owner + '/' + repo_name + ' to repo directory: ' + current_repo_dir)
+#parent_cloned_repo = Repo.clone_from(git_url, parent_repo_dir)
+#print('Cloned ' + repo_owner + '/' + repo_name + ' to repo directory: ' + parent_repo_dir)
+#current_cloned_repo = Repo.clone_from(git_url, current_repo_dir)
+#print('Cloned ' + repo_owner + '/' + repo_name + ' to repo directory: ' + current_repo_dir)
 
 # Retrieve repository object
 test_repo = git_hub.repository(repo_owner, repo_name)
@@ -338,19 +338,24 @@ for pr in pull_requests:
         pr_commit_hash = commits[0].sha
         pr_parent_hash = commits[0].parents[0]['sha']
 
+        print("commit hash: " + pr_commit_hash)
+        print("commit directory: " + current_repo_dir)
+        print("parent hash: " + pr_parent_hash)
+        print("parent directory: " + parent_repo_dir)
+
         # Checkout pull-request's parent commit and create Understand DB on it
-        hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], parent_repo_dir)
-        hw2_utils.create_und_db('pr_parent_commit.udb', parent_repo_dir)
+        #hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], parent_repo_dir)
+        #hw2_utils.create_und_db('pr_parent_commit.udb', parent_repo_dir)
 
         # Checkout pull-request's commit and create Understand DB on it
-        hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], current_repo_dir)
-        hw2_utils.create_und_db('pr_current_commit.udb', current_repo_dir)
+        #hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], current_repo_dir)
+        #hw2_utils.create_und_db('pr_current_commit.udb', current_repo_dir)
 
         # Open Database
-        print(DB_PATH + 'pr_parent_commit.udb')
-        print(DB_PATH + 'pr_current_commit.udb')
-        parent_db = understand.open(DB_PATH + 'pr_parent_commit.udb')
-        current_db = understand.open(DB_PATH + 'pr_current_commit.udb')
+        print(G_DB_PATH + 'pr_parent_commit.udb')
+        print(G_DB_PATH + 'pr_current_commit.udb')
+        parent_db = understand.open(G_DB_PATH + 'pr_parent_commit.udb')
+        current_db = understand.open(G_DB_PATH + 'pr_current_commit.udb')
 
         # TODO Check if any files are added or removed
         # patch_files[index] Index: 0: added files, 1: modified files, 2: deleted files
