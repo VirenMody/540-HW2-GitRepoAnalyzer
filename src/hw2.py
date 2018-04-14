@@ -295,10 +295,11 @@ git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 # Create Query and Search Pull Requests
 query = "language:java is:pr label:bug is:closed"
 
-pull_requests = 10
+pull_requests = 30
 
 # Gets list of merged pull requests from repositories smaller than 50MB
 pr_results = search_by_issues(git_hub, query, pull_requests)
+print(pr_results)
 
 for pr_data in pr_results:
     # Finds commits, checks out commits, creates understand database
@@ -340,7 +341,7 @@ for pr_data in pr_results:
         # TODO Catch this issue, if not remove it
         if parent_file != current_file:
             print('***************** WARNING: FILES DO NOT MATCH ***************************\n\n\n\n\n\n\n\n\n\n\n')
-            exit(-99999999)
+            continue
 
         # Retrieve file entity from database
         try:
@@ -435,7 +436,7 @@ for pr_data in pr_results:
                                 # c_lxm = c_lxm.next()
                                 break
 
-                            data_new_change = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
+                            data_new_change = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title, pr_data[0] + "/" + pr_data[1]]]
                             df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
                             num_changes_found += 1
 
@@ -466,7 +467,7 @@ for pr_data in pr_results:
                 # TODO figure out occurrences
                 occurrence = 'TBD'
 
-                data_new_change = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
+                data_new_change = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title, pr_data[0] + "/" + pr_data[1]]]
                 df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
                 print(df_changes)
 
@@ -479,7 +480,7 @@ for pr_data in pr_results:
                 # TODO figure out occurrences
                 occurrence = 'TBD'
 
-                data_new_change = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
+                data_new_change = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title,pr_data[0] + "/" + pr_data[1]]]
                 df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
                 print(df_changes)
 
@@ -487,7 +488,7 @@ for pr_data in pr_results:
     current_db.close()
 
 print(df_changes)
-df_changes.to_csv('analysis.csv', sep=',', na_rep='', index=False)
+df_changes.to_csv('analysis1.csv', sep=',', na_rep='', index=False)
 
 '''
 Things to Consider

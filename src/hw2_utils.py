@@ -3,7 +3,7 @@ from unidiff import PatchSet
 import subprocess
 import pandas as pd
 
-df_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence', 'prTitle']
+df_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence', 'prTitle', 'RepositoryName']
 
 
 # Understand Helper Functions
