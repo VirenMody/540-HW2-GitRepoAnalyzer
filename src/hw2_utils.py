@@ -64,20 +64,18 @@ def is_entity_match(ent1, ent2):
         return False
 
 
-# TODO Update parameters
 def create_und_db(db_name, dir_to_analyze):
     """
-    Function to create Understand database for repo at [commit]
-    :param db_name: repo database name
-    :param dir_to_analyze: repo to be analyzed
-    :return: return code from execute_command
+    Function to create Understand database for repo for commit [hash]
+    :param db_name: [repo database name].udb
+    :param dir_to_analyze: path to repo to be analyzed
+    :return: return code returned from execute_command function call
     """
     und_cmd = ['und', '-db', db_name, 'create', '-languages', 'java', 'add', dir_to_analyze, 'analyze']
     return execute_command(und_cmd)
 
 
-# TODO remove extra print line stuff
-# TODO Remove console logging+
+# TODO Remove console logging
 def execute_command(command, dir=None):
     """
     Function executes given command on CLI (i.e. create udb files, checkout specific commits, etc.)
