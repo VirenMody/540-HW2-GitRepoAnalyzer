@@ -175,41 +175,26 @@ def understand_simultaneous_entity_iteration():
     print(diff_list)
 
 
-def understand_dict_parsing():
-    parent_db = understand.open('/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/und_db/squaresquash_before.udb')
-    current_db = understand.open('/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/und_db/squaresquash_after.udb')
+# returns tuple: (parent_dict, current_dict, key list of matches, key list of no matches,
+#                   key list of items not in parent, key list of items not in current)
+def understand_dict_parsing(und_db_path1, und_db_path2):
+    parent_db = understand.open(und_db_path1)
+    current_db = understand.open(und_db_path2)
 
     # Retrieve a list of all entities
     # - '~unresolved' entities are declared in Understand, but not defined
-    # - '~volatile' TODO What is volatile
-    # TODO limit which entities are retrieved based on patch files
-    # TODO find list of kind search parameters
-
-    '''
-    print("Parent Database------------------------------------")
-    hw2_utils.print_entities(parent_db)
-    print("Current Database------------------------------------")
-    hw2_utils.print_entities(current_db)
-    '''
-
-    # with open('file.txt', 'w') as f:
-    # print(hw2_utils.print_entities(current_db), file=f)
+    # - '~volatile' only add non-volatile entities
 
     parent_db_dict = {}
     current_db_dict = {}
 
     for entity in parent_db.ents('~unresolved ~volatile'):
-        key = entity.name() + '-' + str(entity.kind()) + '-' + str(entity.parent())
+        key = str(entity.parent()) + '--' + str(entity.kind()) + '--' + entity.name()
         parent_db_dict[key] = entity
 
     for entity in current_db.ents('~unresolved ~volatile'):
-        key = entity.name() + '-' + str(entity.kind()) + '-' + str(entity.parent())
+        key = str(entity.parent()) + '--' + str(entity.kind()) + '--' + entity.name()
         current_db_dict[key] = entity
-
-    # print("Parent Database------------------------------------")
-    # print(parent_db_dict)
-    # print("Current Database------------------------------------")
-    # print(current_db_dict)
 
     print("Parent Keys")
     for key in sorted(parent_db_dict):
@@ -219,42 +204,58 @@ def understand_dict_parsing():
     for key in sorted(current_db_dict):
         print(key + ": " + str(current_db_dict[key]))
 
-    parent_dict_checklist = parent_db_dict.copy()
-    current_dict_checklist = current_db_dict.copy()
-
     # parent to child changes
-    matches = 0
-    no_matches = 0
-    not_in_new_db = 0
-    for key in sorted(parent_db_dict):
-        if key not in current_db_dict:
-            not_in_new_db += 1
-            print(key + " is not in current dictionary")
+    match = 0
+    no_match = 0
+    not_in_parent_dict = 0
+    not_in_commit_dict = 0
+
+    match_ls = []
+    no_match_ls = []
+    not_in_parent_dict_ls = []
+    not_in_commit_dict_ls = []
+    for key in sorted(current_db_dict):
+        if key not in parent_db_dict:
+            not_in_parent_dict += 1
+            print(key + " is in current dictionary but not in parent dictionary")
+            not_in_parent_dict_ls.append(key)
             continue
-        if key in current_db_dict and hw2_utils.is_entity_match(parent_db_dict[key], current_db_dict[key]):
+        elif key in parent_db_dict and hw2_utils.is_entity_match(parent_db_dict[key], current_db_dict[key]):
             print(key + " is match.")
-            matches += 1
-            # print ("Parent Entity info")
-            # hw2_utils.understand_entity_info(parent_db_dict[key])
-            # print ("Current Entity info")
-            # hw2_utils.understand_entity_info(current_db_dict[key])
+            match_ls.append(key)
+            match += 1
         else:
             print(key + " is not match")
-            no_matches += 1
-            # print ("Parent Entity info")
-            # hw2_utils.understand_entity_info(parent_db_dict[key])
-            # print ("Current Entity info")
-            # hw2_utils.understand_entity_info(current_db_dict[key])
+            no_match += 1
+            no_match_ls.append(key)
 
-    print("total matches:" + str(matches))
-    print("total no matches:" + str(no_matches))
-    print("total not in new dictionary:" + str(not_in_new_db))
+    for key in sorted(parent_db_dict):
+        if key not in current_db_dict:
+            not_in_commit_dict += 1
+            print(key + " is in parent dictionary but not in current dictionary")
+            not_in_commit_dict_ls.append(key)
 
-    print("------Squash entry-------")
-    hw2_utils.understand_entity_info(parent_db_dict['SquashEntry.message-Variable-squash.SquashEntry'])
+    return (parent_db_dict, current_db_dict, match_ls, no_match_ls, not_in_parent_dict_ls, not_in_commit_dict_ls)
 
-    print("---Squash entry entities-------")
-    hw2_utils.print_entities(parent_db_dict['SquashEntry.message-Variable-squash.SquashEntry'])
+
+def print_dict_parsing_results(match_ls, no_match_ls, not_in_parent_dict_ls, not_in_commit_dict_ls):
+    print("total matches:" + str(len(match_ls)))
+    print("list of matches")
+    for i in match_ls:
+        print(i)
+    print("total mismatches:" + str(len(no_match_ls)))
+    print("list of mismatches")
+    for i in no_match_ls:
+        print(i)
+    print("total not in parent dictionary:" + str(len(not_in_parent_dict_ls)))
+    print("list not in parent dictionary:")
+    for i in not_in_parent_dict_ls:
+        print(i)
+    print("total not in commit dictionary:" + str(len(not_in_commit_dict_ls)))
+    print("list not in commit dictionary:")
+    for i in not_in_commit_dict_ls:
+        print(i)
+
 
 
 # TODO Make list of libraries/packages installed, specifications, etc.
@@ -321,6 +322,12 @@ current_repo_dir = G_LOCAL_CLONED_REPO_PATH + repo_owner + repo_name + 'current'
 #current_cloned_repo = Repo.clone_from(git_url, current_repo_dir)
 #print('Cloned ' + repo_owner + '/' + repo_name + ' to repo directory: ' + current_repo_dir)
 
+understand_db1 = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/pr_parent_commit.udb'
+understand_db2 = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/pr_current_commit.udb'
+(parent_dict, current_dict, match, no_match, not_in_parent, not_in_commit) = understand_dict_parsing(understand_db1, understand_db2)
+print_dict_parsing_results(match, no_match, not_in_parent, not_in_commit)
+
+'''
 # Retrieve repository object
 test_repo = git_hub.repository(repo_owner, repo_name)
 
@@ -422,10 +429,9 @@ for pr in pull_requests:
                                 # TODO figure out occurrences
                                 occurrence = 1
 
-                                """
-                                Confirm that the change is of the same kindname (i.e. Variable, Data Type, etc.), 
-                                otherwise, categorize as 'Uncategorized' and iterate to end of line
-                                """
+                                #Confirm that the change is of the same kindname (i.e. Variable, Data Type, etc.), 
+                                #otherwise, categorize as 'Uncategorized' and iterate to end of line
+                                
                                 if p_lxm.ent() and c_lxm.ent():
                                     if p_lxm.ent().kindname() == c_lxm.ent().kindname():
                                         change_category = p_lxm.ent().kindname()
@@ -465,6 +471,8 @@ for pr in pull_requests:
                     parent_db.close()
                     current_db.close()
                     exit(-111)
+                    
+'''
 
 '''
 Things to Consider
