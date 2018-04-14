@@ -281,6 +281,8 @@ def print_dict_parsing_results(match_ls, no_match_ls, not_in_parent_dict_ls, not
 # TODO add unit/integration testing
 # TODO better commenting
 # TODO exception handling
+# TODO Give read access to professor
+# TODO If possible avoid README pull request changes - invalid commit
 
 # TODO Update the following to paths where commits are downloaded
 GITHUB_USERNAME = 'virenmody'
@@ -302,15 +304,16 @@ understand_db2 = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2
 print_dict_parsing_results(match, no_match, not_in_parent, not_in_commit)
 '''
 
-# Create Pandas "database" (DataFrame) to store changes
-db_changes = hw2_utils.create_db()
+# Create Pandas DataFrame to store changes
+df_changes = hw2_utils.create_df()
 
 # Authenticate GitHub object
 git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 
+# TODO update the number of pull requests to retrieve
 # Create Query and Search Pull Requests
 query = "language:java is:pr label:bug is:closed"
-pull_requests = 30
+pull_requests = 2
 
 # Gets list of pull requests from repositories smaller than 50MB
 # With pull requests that have been merged
@@ -451,8 +454,8 @@ for pr_data in pr_results:
                                 # c_lxm = c_lxm.next()
                                 break
 
-                            new_change_data = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
-                            db_changes = hw2_utils.add_row_to_db(db_changes, new_change_data)
+                            data_new_change = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
+                            df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
                             num_changes_found += 1
 
                     except Exception as err:
@@ -466,7 +469,7 @@ for pr_data in pr_results:
                     p_lxm = p_lxm.next()
                     c_lxm = c_lxm.next()
 
-                print(db_changes)
+                print(df_changes)
 
             elif HunkObj.added == 0 or HunkObj.removed == 0:
 
@@ -482,9 +485,9 @@ for pr_data in pr_results:
                 # TODO figure out occurrences
                 occurrence = 'TBD'
 
-                new_change_data = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
-                db_changes = hw2_utils.add_row_to_db(db_changes, new_change_data)
-                print(db_changes)
+                data_new_change = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
+                df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
+                print(df_changes)
 
             else:
                 change_category = 'Uncategorized'
@@ -495,9 +498,9 @@ for pr_data in pr_results:
                 # TODO figure out occurrences
                 occurrence = 'TBD'
 
-                new_change_data = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
-                db_changes = hw2_utils.add_row_to_db(db_changes, new_change_data)
-                print(db_changes)
+                data_new_change = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title]]
+                df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
+                print(df_changes)
 
     parent_db.close()
     current_db.close()

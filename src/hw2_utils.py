@@ -12,7 +12,7 @@ from xml.dom import minidom
 
 # Understand Helper Functions
 
-db_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence', 'prTitle']
+df_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence', 'prTitle']
 
 
 def understand_lexeme_info(lexeme):
@@ -121,16 +121,14 @@ def patch_files(url):
     return files
 
 
-def create_db():
-    # test_data = [['ChangeCategory', 'Before', 'After', 'Filename', 'Scope', 'Occur', 'PRTitle']]
-    test_data = [[]]
-    df = pd.DataFrame(test_data, columns=db_headers)
+def create_df():
+    df = pd.DataFrame(columns=df_headers)
     print(df)
     return df
 
 
-def add_row_to_db(df, new_row):
-    new_df = pd.DataFrame(new_row, columns=db_headers)
+def add_row_to_df(df, new_row):
+    new_df = pd.DataFrame(new_row, columns=df_headers)
     df = df.append(new_df, ignore_index=True)
     # print(df)
     return df
@@ -201,6 +199,6 @@ def create_xml_output():
 # Check if script is running as main
 if __name__=="__main__":
 
-    db = create_db()
+    df = create_df()
     new_changes = [['test', 'test', 'test', 'test', 'test', 9]]
-    db = add_row_to_db(db, new_changes)
+    df = add_row_to_df(df, new_changes)
