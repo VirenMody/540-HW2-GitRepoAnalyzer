@@ -12,7 +12,7 @@ from xml.dom import minidom
 
 # Understand Helper Functions
 
-df_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence', 'prTitle']
+df_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence', 'prTitle', 'RepositoryName']
 
 
 def understand_lexeme_info(lexeme):
