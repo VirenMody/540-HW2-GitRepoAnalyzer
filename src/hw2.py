@@ -253,7 +253,7 @@ print_dict_parsing_results(match, no_match, not_in_parent, not_in_commit)
 # - github3.py
 # - GitPython
 # - Understand for Python https://scitools.com/support/python-api/
-# - ntpath
+# - ntpath (works well for us on Ubuntu and Windows)
 # - Python Interpreter 3.6.3
 
 # TODO Algorithm
@@ -264,6 +264,8 @@ print_dict_parsing_results(match, no_match, not_in_parent, not_in_commit)
 # TODO exception handling
 # TODO Give read access to professor
 # TODO If possible avoid README pull request changes - invalid commit
+# TODO Remove unnecessary print statements
+# TODO Optimize by not re-cloning already cloned repos
 
 # TODO Update the following to paths where commits are downloaded
 GITHUB_USERNAME = 'virenmody'
@@ -277,7 +279,7 @@ G_ORIG_DB_PATH = '/home/guillermo/cs540/java_project.udb'
 G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
 G_LOCAL_CLONED_REPO_PATH = '/home/guillermo/cs540/cloned_repos/'
 
-# Create Pandas DataFrame to store changes
+# Create Pandas DataFrame to store changes found
 df_changes = hw2_utils.create_df()
 
 # Authenticate GitHub object
@@ -286,7 +288,7 @@ git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 # TODO update the number of pull requests to retrieve
 # Create Query and Search Pull Requests
 query = "language:java is:pr label:bug is:closed"
-pull_requests = 2
+pull_requests = 10
 
 # Gets list of merged pull requests from repositories smaller than 50MB
 pr_results = search_by_issues(git_hub, query, pull_requests)
@@ -313,14 +315,25 @@ for pr_data in pr_results:
     parent_db = understand.open(DB_PATH + 'pr_parent_commit.udb')
     current_db = understand.open(DB_PATH + 'pr_current_commit.udb')
 
-    # TODO Check if any files are added or removed
-    # From the patch file/url, retrieves a dictionary of files categorized as: added, modified, or deleted files
+    # From the patch file/url, retrieves a dictionary of files categorized as: added, modified, or removed files
     patch_files = hw2_utils.get_files_from_patch(pr.patch_url)
-    modified_files = patch_files['modified_files']
 
-    # TODO Check if ntpath works on non-Windows systems
-    # https://stackoverflow.com/questions/8384737/extract-file-name-from-path-no-matter-what-the-os-path-format
-    for PatchedFileObj in modified_files:
+    # Check to see if any new files were added in the pull request, add change to df_changes
+    for PatchedFileObj in patch_files['added_files']:
+        print('Target Filename: ', ntpath.basename(PatchedFileObj.target_file))
+        added_file = ntpath.basename(PatchedFileObj.target_file)
+        data_new_change = [['New File Added', 'N/A', added_file, added_file, 'Unknown', '0', pr.title]]
+        df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
+
+    # Check to see if any files were removed in the pull request, add change to df_changes
+    for PatchedFileObj in patch_files['removed_files']:
+        print('Source Filename: ', ntpath.basename(PatchedFileObj.source_file))
+        removed_file = ntpath.basename(PatchedFileObj.source_file)
+        data_new_change = [['File Removed', 'N/A', removed_file, removed_file, 'Unknown', '0', pr.title]]
+        df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
+
+    # Identify changes in modified files, add change to df_changes
+    for PatchedFileObj in patch_files['modified_files']:
         print('Source Path: ', PatchedFileObj.source_file)
         print('Target Path: ', PatchedFileObj.target_file)
         print('Source Filename: ', ntpath.basename(PatchedFileObj.source_file))
@@ -346,6 +359,7 @@ for pr_data in pr_results:
         print('Parent File Entity: ', parent_file_ent)
         print('Current File Entity: ', current_file_ent)
 
+        # Each modified file's changes are broken down into hunks, for each hunk find and store changes
         for HunkObj in PatchedFileObj:
             print('Added:   ', HunkObj.added)
             print('Removed: ', HunkObj.removed)
