@@ -12,7 +12,7 @@ from xml.dom import minidom
 
 # Understand Helper Functions
 
-db_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence']
+db_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence', 'prTitle']
 
 
 def understand_lexeme_info(lexeme):
@@ -102,6 +102,11 @@ def execute_command(command, dir=None):
     p.wait()
     print('RETURN CODE: ', p.returncode)
 
+    # Throw exception to "git checkout [commit]" caller
+    # - fatal: reference is not a tree: [commit]
+    if p.returncode == 128:
+        raise Exception
+
 
 # Stores files in file struct, 0: added, 1: modified, 2: deleted
 def patch_files(url):
@@ -118,7 +123,7 @@ def patch_files(url):
 
 
 def create_changes_db():
-    test_data = [['TEST DATA', 'int', 'float', 'file.java', 'main', 2]]
+    test_data = [['ChangeCategory', 'Before', 'After', 'Filename', 'Scope', 'Occur', 'PRTitle']]
     df = pd.DataFrame(test_data, columns=db_headers)
     print(df)
     return df
