@@ -19,6 +19,9 @@ guillermo_rojas_hernandez_viren_mody_hw2.iml
 /original.txt
 /*_html/
 
+# Output Analysis files
+/src/*.csv
+
 # Python cache
 /src/__pycache__/
 

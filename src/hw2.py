@@ -288,6 +288,8 @@ def print_dict_parsing_results(match_ls, no_match_ls, not_in_parent_dict_ls, not
 GITHUB_USERNAME = 'virenmody'
 GITHUB_ACCESS_TOKEN = 'a74c9704e00d767da4fe1d34aaf0ed8603d8ea11'
 
+OUTPUT_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/'
+# OUTPUT_PATH = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/analysis.csv'
 LOCAL_CLONED_REPO_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/ClonedRepos/'
 DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/src/'
 G_DB_PATH = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/'
@@ -315,8 +317,7 @@ git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 query = "language:java is:pr label:bug is:closed"
 pull_requests = 2
 
-# Gets list of pull requests from repositories smaller than 50MB
-# With pull requests that have been merged
+# Gets list of merged pull requests from repositories smaller than 50MB
 pr_results = search_by_issues(git_hub, query, pull_requests)
 
 for pr_data in pr_results:
@@ -504,6 +505,9 @@ for pr_data in pr_results:
 
     parent_db.close()
     current_db.close()
+
+print(df_changes)
+df_changes.to_csv('analysis.csv', sep=',', na_rep='', index=False)
 
 '''
 Things to Consider
