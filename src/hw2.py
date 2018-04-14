@@ -7,12 +7,19 @@ import understand
 import ntpath
 
 
-#TODO Catch exception/error from invalid commits
-# Creates understand databases from commits in passed pull_request
-def create_und_db_from_pull_request(pull_request, path_to_local_clones):
+def create_und_db_from_pull_request(pr_data, path_to_local_clones):
+    """
+    Method creates 2 Understand databases: one for pull request commit, one for parent commit
+    1) Clones repo for each commit
+    2) Git checkout commit for each
+    3) Creates Understand Database for each commit
+    :param pr_data: tuple of owner, repo_name, issue number
+    :param path_to_local_clones:
+    :return:
+    """
 
     # Pull out information of first pull request
-    (owner, repo_name, issue_num, pr_obj) = pull_request
+    (owner, repo_name, issue_num, pr_obj) = pr_data
 
     # Clone repository locally to selected path
     # Return full path of directory as a String
@@ -34,11 +41,14 @@ def create_und_db_from_pull_request(pull_request, path_to_local_clones):
         raise Exception
     hw2_utils.create_und_db('pr_current_commit.udb', commit_dir)
 
-    return parent_dir, commit_dir
 
-
-# TODO Return all commits
+# TODO Return all commits??
 def select_last_commit(pr_obj):
+    """
+    Function retrieves the last of all commits within a pull request and its parent
+    :param pr_obj: pull request object (contains list of related commits)
+    :return: last pull request commit and parent commit
+    """
     # Get the last commit in the list of commits (it is the most recent)
     commits = [commit.refresh() for commit in pr_obj.commits(-1, None)]
     pr_commits = commits[-1]
@@ -48,19 +58,25 @@ def select_last_commit(pr_obj):
     return (pr_commit_hash, pr_parent_hash)
 
 
-# Return: local directory of the cloned repository
 def clone_repo(owner, name, directory, commit_type):
-    # TODO Update repository owner and name based on search results
-    git_url = 'https://github.com/' + owner + '/' + name + '.git'
-    repo_dir = directory + owner + name + commit_type
+    """
+    Function clones repository and returns local path to the repository
+    :param owner: username
+    :param name: repository name
+    :param directory: where to clone repos
+    :param commit_type: 'current' or 'parent' to distinguish pr commit and parent commit
+    :return: local path to cloned repository
+    """
 
+    git_url = 'https://github.com/' + owner + '/' + name + '.git'
+    # Path to locally cloned repo. commit_type distinguishes between pr commit and parent commit
+    repo_dir = directory + owner + name + commit_type
     try:
-        # Clone the repository
         print('Cloning ' + owner + '/' + name + ' to repo directory: ' + repo_dir)
         cloned_repo = Repo.clone_from(git_url, repo_dir)
         assert cloned_repo.__class__ is Repo  # clone an existing repository
-
         return repo_dir
+
     # TODO Replace with logging
     except exc.GitError as err:
         print('***** ERROR CODE: 128 ******\n', err)
@@ -70,43 +86,14 @@ def clone_repo(owner, name, directory, commit_type):
         exit(128)
 
 
-# TODO Remove function if unused
-# param: test_repo [Repository object],
-def retrieve_one_closed_pull_request(test_repo):
-    # Retrieve all 'CLOSED' pull requests
-    pull_requests = [pr.refresh() for pr in test_repo.pull_requests('closed', None, None, 'created', 'desc', -1, None)]
-
-    # TODO pull correct hash for pull request commit and parent commit
-    # Retrieve the commits of all pull requests that have been merged and contain only 1 commit
-    commits = []
-    pr_commit_hash = ''
-    pr_parent_hash = ''
-    for pr in pull_requests:
-        if pr.merged:
-            commits = [commit.refresh() for commit in pr.commits(-1, None)]
-            pr_commit_hash = commits[0].sha
-            pr_parent_hash = commits[0].parents[0]['sha']
-
-            print("pull request commit hash: " + pr_commit_hash)
-            print("parent request commit hash: " + pr_parent_hash)
-            # Checkout pull-request's parent commit and create Understand DB on it
-            # hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], repo_dir)
-            # hw2_utils.create_und_db('pr_parent_commit.udb', repo_dir)
-
-            # Checkout pull-request's commit and create Understand DB on it
-            # hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], repo_dir)
-            # hw2_utils.create_und_db('pr_current_commit.udb', repo_dir)
-            return pr
-
-    return None
-
-
-# Returns the pull request results of a search
-# param: query
-# param: number - the number of results to return
-# return type: list, of 3 member tuples: [(user, repo name, issue #, pull request object)]
 def search_by_issues(git_hub, my_query, num):
-    # TODO Search for Github Java Repositories using issues/pull requests
+    """
+    :param git_hub: authenticated GitHub object
+    :param my_query: search query (i.e. java, closed, etc.)
+    :param num: number of results to retrieve
+    :return: results: tuple with username, repo name, issue number, and the pull request object
+    """
+
     issue_search_result = git_hub.search_issues(query=my_query, number=num)
     results = []
     for item in issue_search_result:
@@ -121,29 +108,11 @@ def search_by_issues(git_hub, my_query, num):
 
         if (repo_obj.size < 50000) and (pr_obj.merged is True):
             results.append((username, repo_name, issue_number, pr_obj))
-        # TODO Remove if not necessary
-        # else:
-        #     continue
 
     return results
 
 
-def search_by_repositories():
-    # TODO Search for Github Java repositories
-    # Query based off of size (less than 50 MB) and language (java)
-    search_query = "language:java size:<50000"
-    repo_search_result = git_hub.search_repositories(query=search_query, number=10)
-    repos = []
-    for i in repo_search_result:
-        repos.append(i)
-
-    print("repo search result")
-    for repo in repos:
-        print("Repo full name: " + repo.repository.full_name)
-
-    return repos
-
-
+# TODO Comments for function
 def understand_simultaneous_entity_iteration():
     # Open Database
     print(DB_PATH + 'pr_parent_commit.udb')
@@ -188,6 +157,7 @@ def understand_simultaneous_entity_iteration():
     print(diff_list)
 
 
+# TODO Comments for function
 # returns tuple: (parent_dict, current_dict, key list of matches, key list of no matches,
 #                   key list of items not in parent, key list of items not in current)
 def understand_dict_parsing(und_db_path1, und_db_path2):
@@ -251,6 +221,7 @@ def understand_dict_parsing(und_db_path1, und_db_path2):
     return (parent_db_dict, current_db_dict, match_ls, no_match_ls, not_in_parent_dict_ls, not_in_commit_dict_ls)
 
 
+# TODO Comments for function
 def print_dict_parsing_results(match_ls, no_match_ls, not_in_parent_dict_ls, not_in_commit_dict_ls):
     print("total matches:" + str(len(match_ls)))
     print("list of matches")
@@ -269,7 +240,14 @@ def print_dict_parsing_results(match_ls, no_match_ls, not_in_parent_dict_ls, not
     for i in not_in_commit_dict_ls:
         print(i)
 
-
+# TODO Remove if not needed
+'''
+#To use understand dictionary parsing 
+understand_db1 = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/pr_parent_commit.udb'
+understand_db2 = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/pr_current_commit.udb'
+(parent_dict, current_dict, match, no_match, not_in_parent, not_in_commit) = understand_dict_parsing(understand_db1, understand_db2)
+print_dict_parsing_results(match, no_match, not_in_parent, not_in_commit)
+'''
 
 # TODO Make list of libraries/packages installed, specifications, etc.
 # - github3.py
@@ -278,6 +256,9 @@ def print_dict_parsing_results(match_ls, no_match_ls, not_in_parent_dict_ls, not
 # - ntpath
 # - Python Interpreter 3.6.3
 
+# TODO Algorithm
+# - Categorize changes in patch_files: file additions/deletions
+# - Within 'Only Insertions' and 'Only Deletions' categorize what was added/removed
 # TODO add unit/integration testing
 # TODO better commenting
 # TODO exception handling
@@ -296,14 +277,6 @@ G_ORIG_DB_PATH = '/home/guillermo/cs540/java_project.udb'
 G_NEW_DB_PATH = '/home/guillermo/cs540/java_project2.udb'
 G_LOCAL_CLONED_REPO_PATH = '/home/guillermo/cs540/cloned_repos/'
 
-'''
-#To use understand dictionary parsing 
-understand_db1 = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/pr_parent_commit.udb'
-understand_db2 = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/pr_current_commit.udb'
-(parent_dict, current_dict, match, no_match, not_in_parent, not_in_commit) = understand_dict_parsing(understand_db1, understand_db2)
-print_dict_parsing_results(match, no_match, not_in_parent, not_in_commit)
-'''
-
 # Create Pandas DataFrame to store changes
 df_changes = hw2_utils.create_df()
 
@@ -321,7 +294,7 @@ pr_results = search_by_issues(git_hub, query, pull_requests)
 for pr_data in pr_results:
     # Finds commits, checks out commits, creates understand database
     try:
-        parent_repo_dir, current_repo_dir = create_und_db_from_pull_request(pr_data, LOCAL_CLONED_REPO_PATH)
+        create_und_db_from_pull_request(pr_data, LOCAL_CLONED_REPO_PATH)
     # TODO Replace print statements with logging
     except Exception as err:
         print('***** ERROR ******\n', err)
