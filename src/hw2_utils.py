@@ -81,7 +81,8 @@ def create_und_db(db_name, dir_to_analyze):
     :return: return code from execute_command
     """
     und_cmd = ['und', '-db', db_name, 'create', '-languages', 'java', 'add', dir_to_analyze, 'analyze']
-    return execute_command(und_cmd)
+    g_und_cmd = 'und -db ' + db_name + ' create -languages java add ' + dir_to_analyze + ' analyze'
+    return execute_command(g_und_cmd)
 
 
 # TODO remove extra print line stuff
@@ -122,9 +123,7 @@ def patch_files(url):
 
 
 def create_db():
-    # test_data = [['ChangeCategory', 'Before', 'After', 'Filename', 'Scope', 'Occur', 'PRTitle']]
-    test_data = [[]]
-    df = pd.DataFrame(test_data, columns=db_headers)
+    df = pd.DataFrame(columns=db_headers)
     print(df)
     return df
 
