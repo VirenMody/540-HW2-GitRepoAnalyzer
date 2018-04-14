@@ -288,8 +288,6 @@ def print_dict_parsing_results(match_ls, no_match_ls, not_in_parent_dict_ls, not
 GITHUB_USERNAME = 'virenmody'
 GITHUB_ACCESS_TOKEN = 'a74c9704e00d767da4fe1d34aaf0ed8603d8ea11'
 
-OUTPUT_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/'
-# OUTPUT_PATH = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/analysis.csv'
 LOCAL_CLONED_REPO_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/ClonedRepos/'
 DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/src/'
 G_DB_PATH = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/'
@@ -343,9 +341,9 @@ for pr_data in pr_results:
     current_db = understand.open(DB_PATH + 'pr_current_commit.udb')
 
     # TODO Check if any files are added or removed
-    # patch_files[index] Index: 0: added files, 1: modified files, 2: deleted files
-    patch_files = hw2_utils.patch_files(pr.patch_url)
-    modified_files = patch_files[1]
+    # From the patch file/url, retrieves a dictionary of files categorized as: added, modified, or deleted files
+    patch_files = hw2_utils.get_files_from_patch(pr.patch_url)
+    modified_files = patch_files['modified_files']
 
     # TODO Check if ntpath works on non-Windows systems
     # https://stackoverflow.com/questions/8384737/extract-file-name-from-path-no-matter-what-the-os-path-format
