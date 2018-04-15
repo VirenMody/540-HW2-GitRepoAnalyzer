@@ -6,7 +6,6 @@ from git import Repo, exc
 from github3 import GitHub
 from github3 import search_issues
 import github3
-import hw2_utils
 import understand
 import ntpath
 
@@ -287,10 +286,11 @@ def execute_command(command, dir=None):
     """
 
     if dir is None:
-        p = subprocess.Popen(command, shell=False)
+        p = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE)
     else:
-        p = subprocess.Popen(command, shell=False, cwd=dir)
-    p.wait()
+        p = subprocess.Popen(command, shell=False, cwd=dir, stdout=subprocess.PIPE)
+    # Captures output, but errors are still displayed
+    output = p.communicate()
 
     # Return Code: 0 (no error), 128 (possible: 'fatal: reference is not a tree: [commit]')
     return p.returncode
