@@ -52,47 +52,40 @@ for pr_data in pr_results:
         print('*************************************************************************************************************\n\n')
         continue
 
-    # pr is the Pull Request Object
+    # pr_data[3] is the Pull Request Object
     pr = pr_data[3]
 
     # Open Database
-    print(DB_PATH + 'pr_parent_commit.udb')
-    print(DB_PATH + 'pr_current_commit.udb')
     parent_db = understand.open(DB_PATH + 'pr_parent_commit.udb')
     current_db = understand.open(DB_PATH + 'pr_current_commit.udb')
 
-    # From the patch file/url, retrieves a dictionary of files categorized as: added, modified, or removed files
+    # From the patch file/url, retrieve a dictionary of files categorized as: added, modified, or removed files
     patch_files = hw2_utils.get_files_from_patch(pr.patch_url)
 
     # Check to see if any new files were added in the pull request, add change to df_changes
     for PatchedFileObj in patch_files['added_files']:
-        print('Target Filename: ', ntpath.basename(PatchedFileObj.target_file))
         added_file = ntpath.basename(PatchedFileObj.target_file)
-        data_new_change = [['New File Added', 'N/A', added_file, added_file, 'Unknown', 'TBD', pr.title]]
+        data_new_change = [['New File Added', 'N/A', added_file, added_file, 'N/A', 'TBD', pr.title]]
         df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
 
     # Check to see if any files were removed in the pull request, add change to df_changes
     for PatchedFileObj in patch_files['removed_files']:
-        print('Source Filename: ', ntpath.basename(PatchedFileObj.source_file))
         removed_file = ntpath.basename(PatchedFileObj.source_file)
-        data_new_change = [['File Removed', 'N/A', removed_file, removed_file, 'Unknown', 'TBD', pr.title]]
+        data_new_change = [['File Removed', 'N/A', removed_file, removed_file, 'N/A', 'TBD', pr.title]]
         df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
 
-    # Identify changes in modified files, add change to df_changes
+    # For each modified file, identify changes in modified files, add change to df_changes
     for PatchedFileObj in patch_files['modified_files']:
-        print('Source Path: ', PatchedFileObj.source_file)
-        print('Target Path: ', PatchedFileObj.target_file)
-        print('Source Filename: ', ntpath.basename(PatchedFileObj.source_file))
-        print('Target Filename: ', ntpath.basename(PatchedFileObj.target_file))
         parent_file = ntpath.basename(PatchedFileObj.source_file)
         current_file = ntpath.basename(PatchedFileObj.target_file)
 
-        # TODO Catch this issue, if not remove it
+        # Since added and removed files have been processed above, modified file mismatch means the file was renamed.
         if parent_file != current_file:
-            print('***************** WARNING: FILES DO NOT MATCH ***************************\n\n\n\n\n\n\n\n\n\n\n')
+            data_new_change = [['File Renamed', parent_file, current_file, current_file, 'N/A', 'TBD', pr.title]]
+            df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
             continue
 
-        # Retrieve file entity from database
+        # Since we are identifying changes per file, retrieve file entity from database
         try:
             parent_file_ent = parent_db.lookup(parent_file, 'file')[0]
             current_file_ent = current_db.lookup(current_file, 'file')[0]
@@ -103,42 +96,37 @@ for pr_data in pr_results:
             print('*************************************************************************************************************\n\n')
             continue
 
-        print('Parent File Entity: ', parent_file_ent)
-        print('Current File Entity: ', current_file_ent)
-
         # Each modified file's changes are broken down into hunks, for each hunk find and store changes
         for HunkObj in PatchedFileObj:
-            print('Added:   ', HunkObj.added)
-            print('Removed: ', HunkObj.removed)
-
             parent_hunk_start = HunkObj.source_start
             parent_hunk_end = parent_hunk_start + HunkObj.source_length
             current_hunk_start = HunkObj.target_start
             current_hunk_end = current_hunk_start + HunkObj.target_length
-            print('Source Start: ', parent_hunk_start, '   Length: ', HunkObj.source_length, '  End: ', parent_hunk_end)
-            print('Target Start: ', current_hunk_start, '   Length: ', HunkObj.target_length, '  End: ', current_hunk_end)
 
             # TODO Maybe add an extra conditional confirming that total number of lines in each hunk are also equal
             if HunkObj.added == HunkObj.removed:
                 parent_lexer = parent_file_ent.lexer()
                 current_lexer = current_file_ent.lexer()
+                # p_lxms = parent_lexer.lexemes(parent_hunk_start, parent_hunk_end)
+                # c_lxms = current_lexer.lexemes(current_hunk_start, current_hunk_end)
                 p_lxm = parent_lexer.first()
                 c_lxm = current_lexer.first()
 
+
                 num_changes_found = 0
                 # TODO Ignore whitespace, newlines, punctuation?
+                # Loop through lexeme to identify mismatches and then categorize the change
                 while p_lxm.next() is not None and c_lxm.next() is not None:
+
+                    # After all changes are found for the given hunk, break loop and move on to next hunk
                     if num_changes_found == HunkObj.added:
                         break
 
                     try:
+                        # When a difference is found, categorize change and add it to the dataframe
                         if p_lxm.text() != c_lxm.text():
-                            print('Found difference: ', p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
-                            if p_lxm.ref():
-                                print('Parent line: ', p_lxm.ref().line())
-                            if c_lxm.ref():
-                                print('Current Line: ', c_lxm.ref().line())
 
+                            # Initialize values for dataframe
                             change_category = 'Uncategorized'
                             before_value = p_lxm.text()
                             after_value = c_lxm.text()
@@ -161,11 +149,13 @@ for pr_data in pr_results:
                                     if p_lxm.ref() and c_lxm.ref() and p_lxm.ref().kindname() == c_lxm.ref().kindname():
                                         scope = p_lxm.ref().scope().name()
 
+                            # If the mismatch represent lexemes that are not entities, the change is not manageable, iterate to the end of the line and break to the next
                             else:
                                 # change_category = 'Uncategorized: KindMismatch'
+                                # Iterate parent lexeme to the end of the line of code
                                 while p_lxm.next().token() != 'Newline':
                                     p_lxm = p_lxm.next()
-
+                                # Iterate current lexeme to the end of the line of code
                                 while c_lxm.next().token() != 'Newline':
                                     c_lxm = c_lxm.next()
                                 break
@@ -176,7 +166,7 @@ for pr_data in pr_results:
 
                     except Exception as err:
                         print('Exception: ', err)
-                        print(err.with_traceback())
+                        # print(err.with_traceback())
 
                         # TODO Check to see if the mismatch lexemes' references are the same in the dependency graph
                         # TODO Check lexemes for the rest of that line before storing change
