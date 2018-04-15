@@ -160,6 +160,7 @@ for pr_data in pr_results:
                                     c_lxm = c_lxm.next()
                                 break
 
+                            # Add changes to the data frame
                             data_new_change = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title, pr_data[0] + "/" + pr_data[1]]]
                             df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
                             num_changes_found += 1
