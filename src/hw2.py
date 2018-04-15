@@ -1,52 +1,28 @@
-from git import Repo, exc
 from github3 import GitHub
-from github3 import search_issues
-import github3
 import hw2_utils
 import understand
 import ntpath
-
-
-# TODO Remove if not needed
-'''
-#To use understand dictionary parsing 
-understand_db1 = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/pr_parent_commit.udb'
-understand_db2 = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/pr_current_commit.udb'
-(parent_dict, current_dict, match, no_match, not_in_parent, not_in_commit) = understand_dict_parsing(understand_db1, understand_db2)
-print_dict_parsing_results(match, no_match, not_in_parent, not_in_commit)
-'''
-
-# TODO Make list of libraries/packages installed, specifications, etc.
-# - github3.py
-# - GitPython
-# - Understand for Python https://scitools.com/support/python-api/
-# - ntpath (works well for us on Ubuntu and Windows)
-# - Python Interpreter 3.6.3
 
 # TODO Algorithm
 # - Categorize changes in patch_files: file additions/deletions
 # - Within 'Only Insertions' and 'Only Deletions' categorize what was added/removed
 # TODO add unit/integration testing
-# TODO better commenting
+# TODO add/improve comments
 # TODO exception handling
-# TODO Give read access to professor
-# TODO If possible avoid README pull request changes - invalid commit
+# TODO Avoid invalid commits
 # TODO Remove unnecessary print statements
+# TODO Implement logging library
 # TODO Optimize by not re-cloning already cloned repos
 
 # TODO Update the following to paths where commits are downloaded
 GITHUB_USERNAME = 'virenmody'
-GITHUB_ACCESS_TOKEN = 'a74c9704e00d767da4fe1d34aaf0ed8603d8ea11'
+GITHUB_ACCESS_TOKEN = 'feec9be9b75ded7680e74e1be28b47c50564c2ac'
 
+#Todo
 LOCAL_CLONED_REPO_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/ClonedRepos/'
-G_LOCAL_CLONED_REPO_PATH = '/home/guillermo/cs540/cloned_repos/'
-#Todo
-LOCAL_CLONED_REPO_PATH = G_LOCAL_CLONED_REPO_PATH
-
+# LOCAL_CLONED_REPO_PATH = '/home/guillermo/cs540/cloned_repos/'
 DB_PATH = 'C:/Users/Viren/Google Drive/1.UIC/540/hw2/guillermo_rojas_hernandez_viren_mody_hw2/src/'
-G_DB_PATH = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/'
-#Todo
-DB_PATH = G_DB_PATH
+# DB_PATH = '/home/guillermo/cs540/guillermo_rojas_hernandez_viren_mody_hw2/src/'
 
 # Create Pandas DataFrame to store changes found
 df_changes = hw2_utils.create_df()
@@ -58,7 +34,7 @@ git_hub = GitHub(GITHUB_USERNAME, GITHUB_ACCESS_TOKEN)
 # Create Query and Search Pull Requests
 query = "language:java is:pr label:bug is:closed"
 
-pull_requests = 4
+pull_requests = 10
 
 # Gets list of merged pull requests from repositories smaller than 50MB
 pr_results = hw2_utils.search_by_issues(git_hub, query, pull_requests)
@@ -70,8 +46,7 @@ for pr_data in pr_results:
         hw2_utils.create_und_db_from_pull_request(pr_data, LOCAL_CLONED_REPO_PATH)
     # TODO Replace print statements with logging
     except Exception as err:
-        print('***** ERROR ******\n', err)
-        print('*************************************************************************************************************')
+        print('**************************************** ERROR CAUGHT ***********************************************************')
         print('Possible: fatal: reference is not a tree: [commit]')
         print('Possible Invalid Commit: Skipping pull request, analyzing next')
         print('*************************************************************************************************************\n\n')
@@ -93,14 +68,14 @@ for pr_data in pr_results:
     for PatchedFileObj in patch_files['added_files']:
         print('Target Filename: ', ntpath.basename(PatchedFileObj.target_file))
         added_file = ntpath.basename(PatchedFileObj.target_file)
-        data_new_change = [['New File Added', 'N/A', added_file, added_file, 'Unknown', '0', pr.title]]
+        data_new_change = [['New File Added', 'N/A', added_file, added_file, 'Unknown', 'TBD', pr.title]]
         df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
 
     # Check to see if any files were removed in the pull request, add change to df_changes
     for PatchedFileObj in patch_files['removed_files']:
         print('Source Filename: ', ntpath.basename(PatchedFileObj.source_file))
         removed_file = ntpath.basename(PatchedFileObj.source_file)
-        data_new_change = [['File Removed', 'N/A', removed_file, removed_file, 'Unknown', '0', pr.title]]
+        data_new_change = [['File Removed', 'N/A', removed_file, removed_file, 'Unknown', 'TBD', pr.title]]
         df_changes = hw2_utils.add_row_to_df(df_changes, data_new_change)
 
     # Identify changes in modified files, add change to df_changes
@@ -122,7 +97,7 @@ for pr_data in pr_results:
             parent_file_ent = parent_db.lookup(parent_file, 'file')[0]
             current_file_ent = current_db.lookup(current_file, 'file')[0]
         except IndexError as err:
-            print('***** ERROR ******\n', err)
+            print('***** INDEX ERROR CAUGHT ******\n', err)
             print('*************************************************************************************************************')
             print('File does not exist. Skipping pull request, analyzing next')
             print('*************************************************************************************************************\n\n')
@@ -147,22 +122,15 @@ for pr_data in pr_results:
             if HunkObj.added == HunkObj.removed:
                 parent_lexer = parent_file_ent.lexer()
                 current_lexer = current_file_ent.lexer()
-                # p_lxms = parent_lexer.lexemes(parent_hunk_start, parent_hunk_end)
-                # c_lxms = current_lexer.lexemes(current_hunk_start, current_hunk_end)
                 p_lxm = parent_lexer.first()
                 c_lxm = current_lexer.first()
 
                 num_changes_found = 0
                 # TODO Ignore whitespace, newlines, punctuation?
                 while p_lxm.next() is not None and c_lxm.next() is not None:
-
                     if num_changes_found == HunkObj.added:
                         break
 
-                    # print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
-                    # hw2_utils.understand_lexeme_info(p_lxm)
-                    # if p_lxm.ent():
-                    #     hw2_utils.understand_entity_info(p_lxm.ent())
                     try:
                         if p_lxm.text() != c_lxm.text():
                             print('Found difference: ', p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
@@ -171,7 +139,7 @@ for pr_data in pr_results:
                             if c_lxm.ref():
                                 print('Current Line: ', c_lxm.ref().line())
 
-                            change_category = '---'
+                            change_category = 'Uncategorized'
                             before_value = p_lxm.text()
                             after_value = c_lxm.text()
                             filename = parent_file
@@ -181,7 +149,6 @@ for pr_data in pr_results:
 
                             # Confirm that the change is of the same kindname (i.e. Variable, Data Type, etc.),
                             # otherwise, categorize as 'Uncategorized' and iterate to end of line
-
                             if p_lxm.ent() and c_lxm.ent():
                                 if p_lxm.ent().kindname() != c_lxm.ent().kindname():
                                     print(p_lxm.text(), '--', p_lxm.ent().kind(), p_lxm.ent().kindname(), '::', c_lxm.ent().kind(), c_lxm.ent().kindname(), '--', c_lxm.text())
@@ -197,19 +164,10 @@ for pr_data in pr_results:
                             else:
                                 # change_category = 'Uncategorized: KindMismatch'
                                 while p_lxm.next().token() != 'Newline':
-                                    # print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
                                     p_lxm = p_lxm.next()
 
                                 while c_lxm.next().token() != 'Newline':
-                                    # print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
                                     c_lxm = c_lxm.next()
-
-                                # print(p_lxm.token().upper(), ':', p_lxm.text(), ' = ', c_lxm.text(), ':', c_lxm.token().upper())
-                                # print('NEXT', p_lxm.next().token().upper(), ':', p_lxm.next().text(), ' = ', c_lxm.next().text(), ':', c_lxm.next().token().upper())
-
-                                # Iterate to next lexeme
-                                # p_lxm = p_lxm.next()
-                                # c_lxm = c_lxm.next()
                                 break
 
                             data_new_change = [[change_category, before_value, after_value, filename, scope, occurrence, pr.title, pr_data[0] + "/" + pr_data[1]]]
@@ -264,7 +222,7 @@ for pr_data in pr_results:
     current_db.close()
 
 print(df_changes)
-df_changes.to_csv('analysis1.csv', sep=',', na_rep='', index=False)
+df_changes.to_csv('analysis.csv', sep=',', na_rep='', index=False)
 
 '''
 Things to Consider

@@ -3,11 +3,7 @@ from unidiff import PatchSet
 import subprocess
 import pandas as pd
 from git import Repo, exc
-from github3 import GitHub
-from github3 import search_issues
-import github3
 import understand
-import ntpath
 
 df_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence', 'prTitle', 'RepositoryName']
 
@@ -34,23 +30,31 @@ def create_und_db_from_pull_request(pr_data, path_to_local_clones):
     # Get the last commit in the list of commits (it is the most recent)
     (pr_commit_hash, pr_parent_hash) = select_last_commit(pr_obj)
 
+    # Todo: Windows: leave as is.
+    # Todo: Ubuntu: Uncomment line  '# git_command = "git checkout " + pr_parent_hash'
+    # Todo: Ubuntu: Uncomment line  '# error_code = execute_command(git_command, parent_dir)'
+    # Todo: Ubuntu: Comment line    'error_code = execute_command(['git', 'checkout', pr_parent_hash], parent_dir)'
     # Checkout pull-request's parent commit and create Understand DB on it
-    git_command = "git checkout " + pr_parent_hash
-    error_code = hw2_utils.execute_command(git_command, parent_dir)
-    # error_code = hw2_utils.execute_command(['git', 'checkout', pr_parent_hash], parent_dir)
-
+    # git_command = "git checkout " + pr_parent_hash
+    # error_code = execute_command(git_command, parent_dir)
+    error_code = execute_command(['git', 'checkout', pr_parent_hash], parent_dir)
     if error_code != 0:
         raise Exception
-    hw2_utils.create_und_db('pr_parent_commit.udb', parent_dir)
 
+    create_und_db('pr_parent_commit.udb', parent_dir)
+
+    # Todo: Windows: leave as is.
+    # Todo: Ubuntu: Uncomment line  '# git_command = "git checkout " + pr_commit_hash'
+    # Todo: Ubuntu: Uncomment line  '# error_code = execute_command(git_command, commit_dir)'
+    # Todo: Ubuntu: Comment line    'error_code = execute_command(['git', 'checkout', pr_commit_hash], commit_dir)'
     # Checkout pull-request's commit and create Understand DB on it
-    git_command = "git checkout " + pr_commit_hash
-    error_code = hw2_utils.execute_command(git_command, commit_dir)
-    # error_code = hw2_utils.execute_command(['git', 'checkout', pr_commit_hash], commit_dir)
-
+    # git_command = "git checkout " + pr_commit_hash
+    # error_code = execute_command(git_command, commit_dir)
+    error_code = execute_command(['git', 'checkout', pr_commit_hash], commit_dir)
     if error_code != 0:
         raise Exception
-    hw2_utils.create_und_db('pr_current_commit.udb', commit_dir)
+
+    create_und_db('pr_current_commit.udb', commit_dir)
 
 
 # TODO Return all commits??
@@ -90,7 +94,7 @@ def clone_repo(owner, name, directory, commit_type):
 
     # TODO Replace with logging
     except exc.GitError as err:
-        print('***** ERROR CODE: 128 ******\n', err)
+        print('***** CAUGHT ERROR: CODE: 128 ******\n', err)
         print('*************************************************************************************************************')
         print('Cloned repositories still exist from the last run.\nPlease delete Cloned Repository directory.\nThen run again.')
         print('*************************************************************************************************************\n\n')
@@ -169,7 +173,7 @@ def understand_dict_parsing(und_db_path1, und_db_path2):
             print(key + " is in current dictionary but not in parent dictionary")
             not_in_parent_dict_ls.append(key)
             continue
-        elif key in parent_db_dict and hw2_utils.is_entity_match(parent_db_dict[key], current_db_dict[key]):
+        elif key in parent_db_dict and is_entity_match(parent_db_dict[key], current_db_dict[key]):
             print(key + " is match.")
             match_ls.append(key)
             match += 1
@@ -271,6 +275,7 @@ def create_und_db(db_name, dir_to_analyze):
     :param dir_to_analyze: path to repo to be analyzed
     :return: return code returned from execute_command function call
     """
+    # Todo
     und_cmd = ['und', '-db', db_name, 'create', '-languages', 'java', 'add', dir_to_analyze, 'analyze']
     #g_und_cmd = 'und -db ' + db_name + ' create -languages java add ' + dir_to_analyze + ' analyze'
     return execute_command(und_cmd)
