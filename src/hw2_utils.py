@@ -86,10 +86,12 @@ def execute_command(command, dir=None):
     """
 
     if dir is None:
-        p = subprocess.Popen(command, shell=True)
+        p = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE)
     else:
-        p = subprocess.Popen(command, shell=True, cwd=dir)
-    p.wait()
+        p = subprocess.Popen(command, shell=False, cwd=dir, stdout=subprocess.PIPE)
+
+    # Captures output,
+    output = p.communicate()
 
     # Return Code: 0 (no error), 128 (possible: 'fatal: reference is not a tree: [commit]')
     return p.returncode
