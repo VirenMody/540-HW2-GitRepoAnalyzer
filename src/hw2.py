@@ -107,8 +107,11 @@ for pr_data in pr_results:
             if HunkObj.added == HunkObj.removed:
                 parent_lexer = parent_file_ent.lexer()
                 current_lexer = current_file_ent.lexer()
-                # p_lxms = parent_lexer.lexemes(parent_hunk_start, parent_hunk_end)
-                # c_lxms = current_lexer.lexemes(current_hunk_start, current_hunk_end)
+                p_lxms = parent_lexer.lexemes(parent_hunk_start, parent_hunk_end)
+                c_lxms = current_lexer.lexemes(current_hunk_start, current_hunk_end)
+                for p_l, c_l in zip(p_lxms, c_lxms):
+                    print(p_l, ':', c_l)
+
                 p_lxm = parent_lexer.first()
                 c_lxm = current_lexer.first()
 

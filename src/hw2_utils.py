@@ -5,7 +5,7 @@ import pandas as pd
 from git import Repo, exc
 import understand
 
-df_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence', 'prTitle', 'RepositoryName']
+    df_headers = ['ChangeCategory', 'BeforeValue', 'AfterValue', 'filename', 'scope', 'occurrence', 'prTitle', 'RepositoryName']
 
 
 def create_und_db_from_pull_request(pr_data, path_to_local_clones):
